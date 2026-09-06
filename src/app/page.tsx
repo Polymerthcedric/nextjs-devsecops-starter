@@ -138,6 +138,37 @@ export default async function Home() {
           Rate limited at the edge · Sessions verified per request · A template, not a toy
         </p>
       </section>
+
+      {/* Selling cta */}
+      <section className="border-t border-[#dfd9cc] dark:border-neutral-800">
+        <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-10">
+          <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
+            Get the code
+          </p>
+          <h2 className="mx-auto mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
+            Stop rebuilding auth. Ship the thing that makes money.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
+            The entire repo — edge proxy, rate limiter, RBAC, tests, deploy
+            pipeline — for one payment, with lifetime updates. You&apos;re
+            looking at the live product, not a mockup.
+          </p>
+          <div className="mt-8">
+            <a
+              href="/buy"
+              className="inline-block rounded-xl bg-[#17130d] px-6 py-3 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
+            >
+              Buy the starter
+            </a>
+            <a
+              href="/admin"
+              className="ml-4 inline-block rounded-xl border border-[#dfd9cc] px-6 py-3 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
+            >
+              Try it first
+            </a>
+          </div>
+        </div>
+      </section>
     </main>
   )
 }

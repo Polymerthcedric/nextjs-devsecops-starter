@@ -23,3 +23,16 @@ on conflict (username) do nothing;
 -- RLS: the service-role key used by the server bypasses RLS, so keep
 -- row-level security enabled to protect the table from direct client access.
 alter table public.users enable row level security;
+
+-- License keys, issued after a Stripe checkout completes. Durable by design:
+-- the app never stores a sale anywhere else.
+create table if not exists public.licenses (
+  id uuid primary key default gen_random_uuid(),
+  license_key text not null unique,
+  email text not null,
+  plan text not null default 'lifetime',
+  session_id text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.licenses enable row level security;
