@@ -11,10 +11,11 @@ create table if not exists public.users (
 
 -- Insert the admin user. Generate the hash with:
 --   node scripts/hash-password.mjs '<password>'
+-- Default demo login (generated for 'admin123'):
 insert into public.users (username, password_hash, role)
 values (
   'admin',
-  'pbkdf2$210000$M10lPa1EV50LrDWXU35ENw==$O5EGKNQykU1QQKSyPvJohdb92q/neAc+nZg1Oe4++YtLUOo0uB03zthtc2Ly5HB384yL+oJyg4BsSeWdApTYMQ==',
+  'pbkdf2$210000$1kfdJ+LHQIty2YS/06NQ2w==$FYmOpehfexCMUQcEKl2CxsPj3HQA5Nn4Enb5jkOT92eAT9TUzBm58xdXTZoUSUxhQ8eUC+BEGADCVrWFlnPNMw==',
   'admin'
 )
 on conflict (username) do nothing;
