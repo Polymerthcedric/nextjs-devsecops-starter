@@ -1,0 +1,51 @@
+# Continuous deployment: previews on PRs, production on main.
+#
+# Setup (one-time):
+#   1. Create a Vercel project and import this repo (framework: Next.js).
+#   2. Add repo secrets (Settings → Secrets → Actions):
+#        VERCEL_TOKEN       — https://vercel.com/account/tokens
+#        VERCEL_ORG_ID      — from `vercel link` output or project settings
+#        VERCEL_PROJECT_ID  — from `vercel link` output or project settings
+#   3. Copy .env values into the Vercel project's Environment Variables.
+#   4. Optional: add "git": { "deploymentEnabled": false } to vercel.json to
+#      disable Vercel's native Git integration (prevents double deploys once
+#      this workflow owns deployments).
+#
+# Until VERCEL_PROJECT_ID is configured, the deploy job is skipped so forks
+# without Vercel secrets still pass CI.
+#
+# Builds the app once on the runner and uploads the prebuilt output
+# (vercel build + deploy --prebuilt), so nothing builds twice.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['*.md']
+  pull_request:
+    branches: [main]
+    paths-ignore: ['*.md']
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: env.VERCEL_PROJECT_ID != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull environment information
+        run: vercel pull --yes --environment=${{ github.event_name == 'pull_request' && 'preview' || 'production' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project artifacts
+        run: vercel build ${{ github.event_name == 'pull_request' && '' || '--prod' }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy project artifacts to Vercel
+        run: vercel deploy --prebuilt ${{ github.event_name == 'pull_request' && '' || '--prod' }} --token=${{ secrets.VERCEL_TOKEN }}

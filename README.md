@@ -74,6 +74,40 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Postgres user store (optional) |
 | `DEMO_USERS` | Env-seeded fallback users (JSON) |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
+| `NEXT_PUBLIC_APP_URL` | Public base URL for SEO (metadata, robots.txt, sitemap) |
+
+## Operations
+
+`GET /api/health` returns a cheap, unauthenticated liveness/readiness probe for
+uptime monitors:
+
+```json
+{"status":"ok","uptime":12.3,"timestamp":"...","services":{"redis":true,"database":false,"sessionSecret":true,"appHost":true}}
+```
+
+Each `services` field is a boolean "is configured" flag — no secrets, no
+upstream calls, so the probe never crashes on a misconfigured local env.
+
+## Deploying
+
+**Vercel** (recommended):
+
+1. Import the repo into Vercel (framework: Next.js). Copy `.env` values into
+   the project's Environment Variables — `SESSION_SECRET` and `APP_HOST` are
+   required in production; `UPSTASH_REDIS_REST_*` and `SUPABASE_*` are on by
+   default. Set `NEXT_PUBLIC_APP_URL` to your canonical domain for SEO.
+2. Optional: add `"git": { "deploymentEnabled": false }` to `vercel.json` if
+   you deploy via GitHub Actions instead of Vercel's native integration.
+
+**GitHub Actions** — `.github/workflows/deploy.yml` builds once on the runner
+and uploads the prebuilt output (`vercel build` + `--prebuilt`), so nothing
+builds twice. It deploys previews on PRs and production on `main`. Configure
+`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` as repo secrets; until
+`VERCEL_PROJECT_ID` is set the job is skipped so forks still pass CI.
+
+**Self-host** — `npm run build && npm run start`. Point a process manager at
+Port 3000 and put a TLS terminator (Caddy/Nginx) in front. `SESSION_SECRET`
+and `APP_HOST` are mandatory; rate limiting needs the Upstash env vars.
 
 ## Seeding users
 
