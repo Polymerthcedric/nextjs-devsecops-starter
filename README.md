@@ -30,13 +30,16 @@ Supabase (optional) · Web Crypto (no auth deps)
 
 | Endpoint | Description |
 | --- | --- |
+| `POST /api/auth/register` | Create a user (PBKDF2-hashed), auto-login |
 | `POST /api/auth/login` | Verify credentials, set `session` cookie |
 | `POST /api/auth/logout` | Clear the `session` cookie |
 | `/login` | Login page, honors `?next=` redirect |
+| `/register` | Sign-up page |
 | `/admin` | Admin dashboard (requires `admin` role) |
 
 **Sessions** are HS256-signed JWTs; the password hash and user store are
-Pluggable behind `src/lib/users.ts`.
+Pluggable behind `src/lib/users.ts`. New signups always start with the
+least-privileged `user` role.
 
 ## Getting started
 
@@ -47,7 +50,7 @@ npm run dev
 ```
 
 Open http://localhost:3000, try `/admin` logged out, then sign in as
-`admin / admin123`.
+`admin / admin123` — or create your own account via `/register`.
 
 > Rate limiting only engages when `NODE_ENV === 'production'`, so local dev
 > needs no live Upstash credentials. To exercise it locally:

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import type { Role } from './auth'
+import type { Role } from './session'
 
 export interface UserRecord {
   username: string
@@ -21,7 +21,6 @@ const isSupabaseConfigured = Boolean(
 
 // Env-seeded fallback users: JSON array of { username, passwordHash, role }.
 // Generate hashes with: npm run hash-password -- <password>
-// Example: DEMO_USERS='[{"username":"admin","passwordHash":"...","role":"admin"}]'
 function fallbackUsers(): UserRecord[] {
   const raw = process.env.DEMO_USERS
   if (raw) {
@@ -44,13 +43,25 @@ function fallbackUsers(): UserRecord[] {
   ]
 }
 
+let fallbackStore: UserRecord[] | null = null
+
+function getFallbackStore(): UserRecord[] {
+  if (!fallbackStore) {
+    fallbackStore = [...fallbackUsers()]
+  }
+  return fallbackStore
+}
+
+function getSupabaseClient() {
+  const url = process.env.SUPABASE_URL!
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  return createClient(url, key)
+}
+
 async function getSupabaseUser(
   username: string,
 ): Promise<UserRecord | null> {
-  const url = process.env.SUPABASE_URL!
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  const client = createClient(url, key)
-  const { data, error } = await client
+  const { data, error } = await getSupabaseClient()
     .from('users')
     .select('username, password_hash, role')
     .eq('username', username)
@@ -64,6 +75,27 @@ async function getSupabaseUser(
   }
 }
 
+async function createSupabaseUser(
+  user: UserRecord,
+): Promise<'created' | 'exists'> {
+  const { error } = await getSupabaseClient()
+    .from('users')
+    .insert({
+      username: user.username,
+      password_hash: user.passwordHash,
+      role: user.role,
+    })
+
+  if (error) {
+    // unique_violation = username already taken
+    if (error.code === '23505') return 'exists'
+    throw error
+  }
+  return 'created'
+}
+
+// ---- Repository API ----
+
 export async function getUserByUsername(
   username: string,
 ): Promise<UserRecord | null> {
@@ -74,6 +106,30 @@ export async function getUserByUsername(
       console.error('Supabase user lookup error:', e)
     }
   }
-  const user = fallbackUsers().find((u) => u.username === username)
-  return user ?? null
+  return getFallbackStore().find((u) => u.username === username) ?? null
+}
+
+export async function usernameExists(username: string): Promise<boolean> {
+  const existing = await getUserByUsername(username)
+  return existing !== null
+}
+
+// Creates a user. Returns 'created' on success, 'exists' if the username is
+// already taken, or 'error' if the store is unavailable.
+export async function createUser(
+  user: UserRecord,
+): Promise<'created' | 'exists' | 'error'> {
+  if (isSupabaseConfigured) {
+    try {
+      return await createSupabaseUser(user)
+    } catch (e) {
+      console.error('Supabase user create error:', e)
+      return 'error'
+    }
+  }
+
+  const store = getFallbackStore()
+  if (store.some((u) => u.username === user.username)) return 'exists'
+  store.push(user)
+  return 'created'
 }
