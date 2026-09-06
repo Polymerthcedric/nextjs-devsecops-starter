@@ -29,22 +29,23 @@ export async function proxy(request: NextRequest) {
   // 2. ROLE-BASED ACCESS CONTROL (RBAC)
   // -------------------------------------------------------
   const { pathname } = request.nextUrl
+  const token = request.cookies.get(COOKIE_NAME)?.value
+  const session = token ? await verifySession(token) : null
 
-  // Protected Admin Route: verify the signed, httpOnly session cookie.
+  const bounce = () => {
+    const loginUrl = new URL('/login', request.url)
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  // /admin requires the admin role.
   if (pathname.startsWith('/admin')) {
-    const token = request.cookies.get(COOKIE_NAME)?.value
-    let isAdmin = false
+    if (session?.role !== 'admin') return bounce()
+  }
 
-    if (token) {
-      const session = await verifySession(token)
-      isAdmin = session?.role === 'admin'
-    }
-
-    if (!isAdmin) {
-      const loginUrl = new URL('/login', request.url)
-      loginUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(loginUrl)
-    }
+  // /dashboard requires any authenticated user.
+  if (pathname.startsWith('/dashboard')) {
+    if (!session) return bounce()
   }
 
   // If both checks pass, forward the request to the Next.js router.

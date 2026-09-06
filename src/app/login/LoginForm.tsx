@@ -28,7 +28,18 @@ export default function LoginForm() {
         setLoading(false)
         return
       }
-      router.push(next && next.startsWith('/') ? next : '/admin')
+
+      // If the user was headed somewhere they can't access (e.g. a `user`
+      // trying to reach /admin), fall back to their dashboard. Otherwise use
+      // the requested destination.
+      const role = data.role as 'admin' | 'user' | undefined
+      const wantsAdmin = next?.startsWith('/admin')
+      const destination =
+        next && next.startsWith('/') && !(wantsAdmin && role !== 'admin')
+          ? next
+          : '/dashboard'
+
+      router.push(destination)
       router.refresh()
     } catch {
       setError('Something went wrong. Try again.')

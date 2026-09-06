@@ -10,16 +10,16 @@ export default function Home() {
         </p>
         <div className="mt-8 flex gap-4">
           <a
-            href="/login"
+            href="/dashboard"
             className="rounded-lg bg-[#17130d] px-4 py-2 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
           >
-            Sign in
+            Members
           </a>
           <a
-            href="/admin"
+            href="/login"
             className="rounded-lg border border-[#dfd9cc] px-4 py-2 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
           >
-            Admin dashboard
+            Sign in
           </a>
         </div>
       </div>

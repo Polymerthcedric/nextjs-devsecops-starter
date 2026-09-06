@@ -26,8 +26,8 @@ export default function RegisterForm() {
         setLoading(false)
         return
       }
-      // New users have role "user" (not admin), so send them to the homepage.
-      router.push('/')
+      // New users have the "user" role; land them on their dashboard.
+      router.push('/dashboard')
       router.refresh()
     } catch {
       setError('Something went wrong. Try again.')

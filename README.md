@@ -35,11 +35,15 @@ Supabase (optional) · Web Crypto (no auth deps)
 | `POST /api/auth/logout` | Clear the `session` cookie |
 | `/login` | Login page, honors `?next=` redirect |
 | `/register` | Sign-up page |
+| `/dashboard` | Members area (any authenticated role) |
 | `/admin` | Admin dashboard (requires `admin` role) |
 
 **Sessions** are HS256-signed JWTs; the password hash and user store are
 Pluggable behind `src/lib/users.ts`. New signups always start with the
 least-privileged `user` role.
+
+**Route guards** at the edge (`src/proxy.ts`) and in-server helpers:
+`requireRole('admin')` for `/admin`, `requireAuth()` for `/dashboard`.
 
 ## Getting started
 

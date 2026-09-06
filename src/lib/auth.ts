@@ -51,3 +51,12 @@ export async function requireRole(role: Role): Promise<Session> {
   }
   return session
 }
+
+// Requires any authenticated session, regardless of role.
+export async function requireAuth(): Promise<Session> {
+  const session = await getSession()
+  if (!session) {
+    redirect('/login')
+  }
+  return session
+}
