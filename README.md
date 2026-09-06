@@ -1,61 +1,86 @@
 # DevSecOps Starter
 
-A hyper-constrained, secure-by-default [Next.js](https://nextjs.org) starter kit.
-Built to be sold as a zero-marginal-cost digital asset: write it once, license it
-many times.
+A hyper-constrained Next.js starter with security baked in — rate limiting,
+role-based access control, and a hard-edged edge middleware — so your app
+survives a viral spike without burning a hole in your wallet.
 
-## What's inside
+Write it once, ship it everywhere. Secure by default. Zero bloat.
 
-- **Edge middleware** (`src/middleware.ts`) that runs before any component renders
-- **Rate limiting** (`src/lib/ratelimit.ts`) via Upstash Redis sliding window —
-  10 requests / 10s / IP. The bouncer that stops the infrastructure death spiral
-  before a single DB query.
-- **Role-based access control (RBAC)** — signed, httpOnly JWT sessions verified
-  at the edge. `/admin` is gated to the `admin` role.
-- **Strict security headers** (`next.config.ts`): CSP, HSTS, X-Frame-Options,
-  Permissions-Policy, and more.
-- **Pure Tailwind, zero bloat.** No UI framework. No Vercel analytics.
+## What you get
 
-## Authentication
+- **Edge proxy** (`src/proxy.ts`) that runs before a single component renders
+- **Rate limiting** via Upstash Redis sliding window — 10 req / 10 s / IP. The
+  bouncer that stops the infrastructure death spiral before it reaches your DB.
+- **RBAC sessions** — signed, httpOnly JWT cookies verified at the edge.
+  `/admin` is gated to the `admin` role; everyone else gets bounced to `/login`.
+- **PBKDF2 password hashing** — dependency-free Web Crypto, 210k iterations,
+  per-user salt. No plaintext, no native bcrypt modules to fight.
+- **DB-backed users** — Supabase/Postgres when configured, env-seeded fallback
+  when not. Same fail-open philosophy as the Redis limiter: runs anywhere on a
+  free tier with zero config.
+- **Strict security headers** (CSP, HSTS, X-Frame-Options, Permissions-Policy)
+  locked into `next.config.ts`.
 
-Sessions are signed with **HS256 via the Web Crypto API** — zero heavy
-dependencies, runs on the Edge runtime in the middleware.
+## Stack
+
+Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript · Upstash Redis ·
+Supabase (optional) · Web Crypto (no auth deps)
+
+## Auth
 
 | Endpoint | Description |
 | --- | --- |
-| `POST /api/auth/login` | Validates credentials, sets `session` cookie |
-| `POST /api/auth/logout` | Clears the `session` cookie |
-| `/login` | Login page (redirects to `?next=` after success) |
-| `/admin` | Protected dashboard (requires `admin` role) |
+| `POST /api/auth/login` | Verify credentials, set `session` cookie |
+| `POST /api/auth/logout` | Clear the `session` cookie |
+| `/login` | Login page, honors `?next=` redirect |
+| `/admin` | Admin dashboard (requires `admin` role) |
 
-> **Demo credentials** (hard-coded in `src/lib/auth.ts`, replace before shipping):
-> `admin / admin123` (role `admin`) and `user / user123` (role `user`).
+**Sessions** are HS256-signed JWTs; the password hash and user store are
+Pluggable behind `src/lib/users.ts`.
 
 ## Getting started
 
 ```bash
 npm install
-cp .env.example .env.local   # set UPSTASH_REDIS_* and SESSION_SECRET
+cp .env.example .env.local   # set SESSION_SECRET (and optionally Supabase)
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Try `/admin` while logged
-out — you'll be bounced to `/login`. Sign in as `admin/admin123` to get through.
+Open http://localhost:3000, try `/admin` logged out, then sign in as
+`admin / admin123`.
 
-> **Note:** Rate limiting only engages when `NODE_ENV === 'production'`, so local
-> dev doesn't need live Upstash credentials. For a local run that exercises the
-> limiter, set `NODE_ENV=production` (e.g. `npm run build && NODE_ENV=production npm run start`).
+> Rate limiting only engages when `NODE_ENV === 'production'`, so local dev
+> needs no live Upstash credentials. To exercise it locally:
+> `npm run build && NODE_ENV=production npm run start`.
 
 ## Env vars
 
 | Variable | Purpose |
 | --- | --- |
-| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL for the rate limiter |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
-| `SESSION_SECRET` | HMAC secret for signing session JWTs |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiter backend |
+| `SESSION_SECRET` | HMAC secret (JWT signing) |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Postgres user store (optional) |
+| `DEMO_USERS` | Env-seeded fallback users (JSON) |
+
+## Seeding users
+
+Generate a password hash and add users to Supabase or `DEMO_USERS`:
+
+```bash
+npm run hash-password -- 'a-strong-password'
+```
+
+`supabase/schema.sql` has the `users` table DDL and an admin seed row.
 
 ## Scripts
 
 - `npm run dev` — development server
-- `npm run build` / `npm run start` — production server
+- `npm run build` / `npm run start` — production
 - `npm run lint` — ESLint
+- `npm run hash-password` — generate a PBKDF2 hash
+
+---
+
+This is the commercial boilerplate. The free, public face is the
+[JSON to Zustand generator](https://github.com/Polymerthcedric/json-zustand-generator).
+Contact to license this starter for your team.
