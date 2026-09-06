@@ -20,6 +20,11 @@ Write it once, ship it everywhere. Secure by default. Zero bloat.
   free tier with zero config.
 - **Strict security headers** (CSP, HSTS, X-Frame-Options, Permissions-Policy)
   locked into `next.config.ts`.
+- **Origin-based CSRF defense** (`src/lib/csrf.ts`) on every auth POST — strict
+  in production, rejects foreign origins even behind SameSite cookies.
+- **CI + tests** — `.github/workflows/ci.yml` gates lint → tests → build on
+  every push; Vitest covers password hashing, JWT sessions, the user repo, and
+  the CSRF check.
 
 ## Stack
 
@@ -68,6 +73,7 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `SESSION_SECRET` | HMAC secret (JWT signing) |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Postgres user store (optional) |
 | `DEMO_USERS` | Env-seeded fallback users (JSON) |
+| `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
 
 ## Seeding users
 

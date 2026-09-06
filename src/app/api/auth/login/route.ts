@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { COOKIE_NAME, signSession, verifyCredentials } from '@/lib/auth'
+import { isSameOrigin } from '@/lib/csrf'
 
 export async function POST(request: Request) {
+  if (!isSameOrigin(request)) {
+    return NextResponse.json({ error: 'Cross-origin request rejected' }, { status: 403 })
+  }
+
   const body = await request.json().catch(() => null)
   const username = body?.username?.trim() ?? ''
   const password = body?.password ?? ''
