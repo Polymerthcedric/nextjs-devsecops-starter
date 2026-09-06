@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Lint, typecheck, test & build
+    runs-on: ubuntu-latest
+    env:
+      # Surfaces TS/ESLint errors as failures in CI.
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Typecheck & build
+        run: npm run build
+        env:
+          # Provide safe, non-secret values so the build's fail-open paths
+          # (Redis, Supabase) resolve without real credentials in CI.
+          SESSION_SECRET: ci-only-insecure-session-secret

@@ -84,7 +84,15 @@ npm run hash-password -- 'a-strong-password'
 - `npm run dev` — development server
 - `npm run build` / `npm run start` — production
 - `npm run lint` — ESLint
+- `npm test` — Vitest unit tests (password hashing, JWT sessions, user repo)
 - `npm run hash-password` — generate a PBKDF2 hash
+
+## CI
+
+`.github/workflows/ci.yml` runs on every push/PR to `main`:
+lint → tests → production build, with `npm ci` for reproducible installs.
+The workflow injects a throwaway, non-secret `SESSION_SECRET` so the build's
+fail-open paths resolve without real credentials in CI.
 
 ---
 
