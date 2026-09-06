@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { ratelimit } from '@/lib/ratelimit'
+import { COOKIE_NAME, verifySession } from '@/lib/auth'
 
 export async function middleware(request: NextRequest) {
-  const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? '127.0.0.1'
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    '127.0.0.1'
   
   // -------------------------------------------------------
   // 1. THE BOUNCER (Stop the Infrastructure Death Spiral)
@@ -26,16 +29,21 @@ export async function middleware(request: NextRequest) {
   // 2. ROLE-BASED ACCESS CONTROL (RBAC)
   // -------------------------------------------------------
   const { pathname } = request.nextUrl
-  
-  // Example: Protected Admin Routes
+
+  // Protected Admin Route: verify the signed, httpOnly session cookie.
   if (pathname.startsWith('/admin')) {
-    // In a production app, this parses an encrypted JWT from a cookie.
-    // For this boilerplate, we look for a mocked session token.
-    const sessionToken = request.cookies.get('session_token')?.value
-    const userRole = sessionToken === 'valid-admin-token' ? 'ADMIN' : 'GUEST'
-    
-    if (userRole !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/login', request.url))
+    const token = request.cookies.get(COOKIE_NAME)?.value
+    let isAdmin = false
+
+    if (token) {
+      const session = await verifySession(token)
+      isAdmin = session?.role === 'admin'
+    }
+
+    if (!isAdmin) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
     }
   }
 
