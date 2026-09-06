@@ -6,9 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "hash-password": "node scripts/hash-password.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.4",
     "next": "16.3.4",

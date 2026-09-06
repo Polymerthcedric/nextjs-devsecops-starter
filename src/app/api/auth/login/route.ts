@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     )
   }
 
-  const session = verifyCredentials(username, password)
+  const session = await verifyCredentials(username, password)
   if (!session) {
     return NextResponse.json(
       { error: 'Invalid credentials' },

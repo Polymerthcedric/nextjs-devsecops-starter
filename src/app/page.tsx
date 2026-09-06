@@ -11,13 +11,13 @@ export default function Home() {
         <div className="mt-8 flex gap-4">
           <a
             href="/login"
-            className="rounded-md bg-neutral-900 px-4 py-2 text-white transition hover:bg-neutral-700 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+            className="rounded-lg bg-[#17130d] px-4 py-2 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
           >
             Sign in
           </a>
           <a
             href="/admin"
-            className="rounded-md border border-neutral-300 px-4 py-2 transition hover:border-neutral-500 dark:border-neutral-700 dark:hover:border-neutral-400"
+            className="rounded-lg border border-[#dfd9cc] px-4 py-2 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
           >
             Admin dashboard
           </a>

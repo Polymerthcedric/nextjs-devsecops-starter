@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { ratelimit } from '@/lib/ratelimit'
-import { COOKIE_NAME, verifySession } from '@/lib/auth'
+import { COOKIE_NAME, verifySession } from '@/lib/session'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
     '127.0.0.1'

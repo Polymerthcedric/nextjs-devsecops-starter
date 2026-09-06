@@ -3,6 +3,10 @@
 @theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Warm accent, matching the engineering-as-marketing tool aesthetic */
+  --color-accent: #b15b18;
+  --color-accent-soft: #f3c086;
 }
 
 :root {

@@ -50,7 +50,7 @@ export default function LoginForm() {
           required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-foreground outline-none focus:border-neutral-500 dark:border-neutral-700"
+          className="w-full rounded-lg border border-[#dfd9cc] bg-transparent px-3 py-2 text-[#17130d] outline-none focus:border-[#b15b18] dark:border-neutral-700 dark:text-neutral-100"
         />
       </div>
 
@@ -66,7 +66,7 @@ export default function LoginForm() {
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-neutral-300 bg-transparent px-3 py-2 text-foreground outline-none focus:border-neutral-500 dark:border-neutral-700"
+          className="w-full rounded-lg border border-[#dfd9cc] bg-transparent px-3 py-2 text-[#17130d] outline-none focus:border-[#b15b18] dark:border-neutral-700 dark:text-neutral-100"
         />
       </div>
 
@@ -77,7 +77,7 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-neutral-900 px-4 py-2 font-medium text-white transition hover:bg-neutral-700 disabled:opacity-50 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-neutral-300"
+        className="w-full rounded-lg bg-[#17130d] px-4 py-2 font-semibold text-[#fbfaf7] transition hover:bg-accent disabled:opacity-50 dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
       >
         {loading ? 'Signing in…' : 'Sign in'}
       </button>
