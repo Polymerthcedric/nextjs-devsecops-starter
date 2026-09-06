@@ -49,8 +49,8 @@ export function normalizeLicenseKey(key: string): string {
   return key.trim().toUpperCase()
 }
 
-// Creates a license, idempotently for a given Stripe session id.
-// Returns the license record, or null if the store is unavailable.
+// Creates a license, idempotently for a given checkout id (Paddle transaction
+// id). Returns the license record, or null if unavailable.
 export async function createLicense(input: {
   email: string
   sessionId: string

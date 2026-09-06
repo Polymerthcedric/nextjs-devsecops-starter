@@ -12,6 +12,7 @@ export async function GET() {
     database: Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY),
     sessionSecret: Boolean(process.env.SESSION_SECRET),
     appHost: Boolean(process.env.APP_HOST),
+    paddle: Boolean(process.env.PADDLE_API_KEY && process.env.PADDLE_PRICE_ID),
   }
 
   return NextResponse.json(

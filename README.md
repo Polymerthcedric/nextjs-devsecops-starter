@@ -75,6 +75,9 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `DEMO_USERS` | Env-seeded fallback users (JSON) |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
 | `NEXT_PUBLIC_APP_URL` | Public base URL for SEO (metadata, robots.txt, sitemap) |
+| `PADDLE_ENV` / `PADDLE_API_KEY` / `PADDLE_PRICE_ID` | Paddle Billing (Merchant of Record) — checkout + license sales |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public Paddle.js client token for the in-page checkout overlay |
+| `PADDLE_WEBHOOK_SECRET` | Paddle `transaction.completed` webhook signing secret |
 
 ## Operations
 
@@ -87,6 +90,23 @@ uptime monitors:
 
 Each `services` field is a boolean "is configured" flag — no secrets, no
 upstream calls, so the probe never crashes on a misconfigured local env.
+
+## Selling the starter (Paddle)
+
+`/buy` sells this boilerplate itself. Paddle acts as Merchant of Record —
+it bills buyers, handles global sales tax, and pays you out. To switch it on:
+
+1. Set the env vars above (sandbox first: `PADDLE_ENV=sandbox`, sandbox API key).
+2. Under **Checkout > Checkout settings > Default payment link**, add and get
+   an **approved** payment link — required before hosted checkout works.
+3. Under **Developer Tools > Event delivery**, create a webhook destination
+   for `https://your-domain/api/paddle/webhook`, subscribe to
+   `transaction.completed`, and copy the secret into `PADDLE_WEBHOOK_SECRET`.
+4. Create a one-time price in the catalog; put its id in `PADDLE_PRICE_ID`.
+
+Buyers pay on an in-page Paddle.js checkout (or the hosted URL), the success
+page shows their `DS-XXXXX-XXXXX-XXXXX` license key, and `/api/health` reports
+`"paddle": <configured>` for monitoring.
 
 ## Deploying
 

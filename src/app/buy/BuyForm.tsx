@@ -2,6 +2,36 @@
 
 import { useState } from 'react'
 
+declare global {
+  interface Window {
+    Paddle?: {
+      Initialize: (config: Record<string, unknown>) => void
+      Checkout: {
+        open: (config: Record<string, unknown>) => Promise<void>
+      }
+    }
+  }
+}
+
+const PADDLE_CLIENT_TOKEN =
+  typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN : ''
+const PADDLE_ENV =
+  typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'live' : 'live'
+const APP_URL =
+  typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_APP_URL ?? '' : ''
+
+function loadPaddleJs(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (window.Paddle) return resolve()
+    const s = document.createElement('script')
+    s.src = 'https://cdn.paddle.com/paddle/v3/paddle.js'
+    s.async = true
+    s.onload = () => resolve()
+    s.onerror = () => reject(new Error('Could not load Paddle.js'))
+    document.head.appendChild(s)
+  })
+}
+
 export default function BuyForm({ configured }: { configured: boolean }) {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'busy' | 'error'>('idle')
@@ -12,6 +42,7 @@ export default function BuyForm({ configured }: { configured: boolean }) {
     if (status === 'busy') return
     setStatus('busy')
     setError('')
+
     try {
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -24,7 +55,30 @@ export default function BuyForm({ configured }: { configured: boolean }) {
         setError(data?.error ?? 'Something went wrong.')
         return
       }
-      if (data?.url) window.location.assign(data.url)
+
+      const transactionId = data?.transactionId
+      if (!transactionId) {
+        setStatus('error')
+        setError('Checkout could not start — no transaction returned.')
+        return
+      }
+
+      // Overlay checkout when a public client token is wired; otherwise bounce
+      // to the hosted checkout URL Paddle returned.
+      if (PADDLE_CLIENT_TOKEN) {
+        await loadPaddleJs()
+        window.Paddle!.Initialize({ token: PADDLE_CLIENT_TOKEN, environment: PADDLE_ENV })
+        await window.Paddle!.Checkout.open({
+          transactionId,
+          customer: email ? { email } : undefined,
+          settings: {
+            displayMode: 'overlay',
+            successUrl: `${APP_URL}/success?transaction_id=${transactionId}`,
+          },
+        })
+      } else {
+        window.location.assign(data.checkoutUrl)
+      }
     } catch {
       setStatus('error')
       setError('Could not reach checkout.')
@@ -54,7 +108,7 @@ export default function BuyForm({ configured }: { configured: boolean }) {
         disabled={status === 'busy'}
         className="mt-4 w-full rounded-xl bg-[#17130d] px-5 py-3 font-semibold text-[#fbfaf7] transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
       >
-        {status === 'busy' ? 'Opening Stripe…' : 'Buy the starter → Stripe checkout'}
+        {status === 'busy' ? 'Opening checkout…' : 'Buy the starter'}
       </button>
       {status === 'error' && (
         <p className="mt-3 text-center font-mono text-xs text-red-600 dark:text-red-400">
@@ -63,7 +117,7 @@ export default function BuyForm({ configured }: { configured: boolean }) {
       )}
       {!configured && status === 'idle' && (
         <p className="mt-3 text-center font-mono text-xs text-neutral-500">
-          Stripe isn&apos;t wired to this deployment yet — this button will
+          Paddle isn&apos;t wired to this deployment yet — this button will
           explain once you touch it.
         </p>
       )}

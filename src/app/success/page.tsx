@@ -1,38 +1,48 @@
 import Link from 'next/link'
-import { getStripe } from '@/lib/stripe'
 import { createLicense, findLicenseBySession } from '@/lib/licenses'
+import { getPaddleCustomerEmail, getPaddleTransaction, isPaddleConfigured } from '@/lib/paddle'
 
 export const dynamic = 'force-dynamic'
 
 type LicenseResult =
   | { done: true; license: { licenseKey: string; email: string; plan: string } }
-  | { done: false; reason: 'stripe-not-configured' | 'invalid-session' | 'unpaid' | 'store-unavailable' }
+  | { done: false; reason: 'paddle-not-configured' | 'invalid-session' | 'unpaid' | 'store-unavailable' }
 
-async function getLicense(sessionId: string): Promise<LicenseResult> {
-  const stripe = getStripe()
-  if (!stripe) return { done: false as const, reason: 'stripe-not-configured' }
+async function getLicense(transactionId: string): Promise<LicenseResult> {
+  if (!isPaddleConfigured()) {
+    return { done: false as const, reason: 'paddle-not-configured' }
+  }
 
-  let session
+  let txn
   try {
-    session = await stripe.checkout.sessions.retrieve(sessionId)
+    txn = await getPaddleTransaction(transactionId)
   } catch {
     return { done: false as const, reason: 'invalid-session' }
   }
 
-  if (session.payment_status !== 'paid') {
+  if (!txn) {
+    return { done: false as const, reason: 'invalid-session' }
+  }
+
+  if (txn.status !== 'completed') {
     return { done: false as const, reason: 'unpaid' }
   }
 
-  const existing = await findLicenseBySession(session.id)
+  const existing = await findLicenseBySession(transactionId)
   if (existing) {
     return { done: true as const, license: existing }
   }
 
+  const email =
+    txn.email ??
+    (txn.customerId ? await getPaddleCustomerEmail(txn.customerId).catch(() => null) : null) ??
+    'buyer@paddle.com'
+
   // Idempotent: session_id has a unique index, so a concurrent claim either
   // inserts once or finds the winner.
   const license = await createLicense({
-    email: session.customer_details?.email ?? 'buyer@example.com',
-    sessionId: session.id,
+    email,
+    sessionId: transactionId,
   })
 
   if (!license) {
@@ -47,21 +57,21 @@ export default async function SuccessPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const sp = await searchParams
-  const sessionId = sp.session_id as string | undefined
+  const transactionId = sp.transaction_id as string | undefined
 
   let state: LicenseResult | { done: false; reason: 'missing' }
 
-  if (!sessionId) {
+  if (!transactionId) {
     state = { done: false, reason: 'missing' }
   } else {
-    state = await getLicense(sessionId)
+    state = await getLicense(transactionId)
   }
 
   if (!state.done) {
     const copy = {
-      missing: ['No session id supplied.', 'This page should open straight from checkout.'],
-      'stripe-not-configured': ['Stripe is not configured.', "The owner hasn't wired up payments yet."],
-      'invalid-session': ['That checkout session is unknown.', 'Double-check the link.'],
+      missing: ['No transaction id supplied.', 'This page should open straight from checkout.'],
+      'paddle-not-configured': ['Paddle is not configured.', "The owner hasn't wired up payments yet."],
+      'invalid-session': ['That transaction is unknown.', 'Double-check the link.'],
       unpaid: ['Payment not completed.', 'You can keep this tab open while you finish paying.'],
       'store-unavailable': ['Could not reach the license vault.', 'Check back in a minute — it regenerates automatically.'],
     }[state.reason]!

@@ -24,7 +24,7 @@ on conflict (username) do nothing;
 -- row-level security enabled to protect the table from direct client access.
 alter table public.users enable row level security;
 
--- License keys, issued after a Stripe checkout completes. Durable by design:
+-- License keys, issued after a Paddle checkout completes. Durable by design:
 -- the app never stores a sale anywhere else.
 create table if not exists public.licenses (
   id uuid primary key default gen_random_uuid(),

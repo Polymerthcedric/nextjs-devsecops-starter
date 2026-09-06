@@ -1,17 +1,12 @@
-import { getStripe } from '@/lib/stripe'
+import { getPaddlePrice } from '@/lib/paddle'
 import BuyForm from './BuyForm'
 
 export const dynamic = 'force-dynamic'
 
 async function getPrice() {
-  const stripe = getStripe()
-  const priceId = process.env.STRIPE_PRICE_ID
-  if (!stripe || !priceId) return null
-  try {
-    return await stripe.prices.retrieve(priceId)
-  } catch {
-    return null
-  }
+  const price = await getPaddlePrice()
+  if (!price) return null
+  return price
 }
 
 const includes = [
@@ -29,8 +24,8 @@ export default async function BuyPage() {
   const priceLabel = price
     ? new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: price.currency.toUpperCase(),
-      }).format(price.unit_amount! / 100)
+        currency: price.currency,
+      }).format(price.amount)
     : null
 
   return (
@@ -91,7 +86,7 @@ export default async function BuyPage() {
       </section>
 
       <p className="mt-8 text-center font-mono text-xs text-neutral-500 dark:text-neutral-500">
-        Payment handled by Stripe · license key delivered instantly · the code
+        Payment handled by Paddle · license key delivered instantly · the code
         is the product
       </p>
     </main>
