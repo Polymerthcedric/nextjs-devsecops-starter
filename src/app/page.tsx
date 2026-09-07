@@ -1,5 +1,6 @@
 import { COOKIE_NAME, verifySession } from '@/lib/session'
 import { cookies } from 'next/headers'
+import PaddleRedirect from './PaddleRedirect'
 
 const features = [
   {
@@ -46,6 +47,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen">
+      <PaddleRedirect />
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pt-24 pb-16 sm:pt-32 sm:px-10">
         <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">

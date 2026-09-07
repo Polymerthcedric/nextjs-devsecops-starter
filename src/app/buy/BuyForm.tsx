@@ -34,7 +34,7 @@ function loadPaddleJs(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.Paddle) return resolve()
     const s = document.createElement('script')
-    s.src = 'https://cdn.paddle.com/paddle/v3/paddle.js'
+    s.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
     s.async = true
     s.onload = () => resolve()
     s.onerror = () => reject(new Error('Could not load Paddle.js'))
