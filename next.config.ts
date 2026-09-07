@@ -25,6 +25,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Make the generated buyer deliverable available to the license-checked
+  // /api/download route at runtime; it is not part of the public static tree.
+  outputFileTracingIncludes: {
+    '/api/download': ['./.deliverable/starter.tar.gz'],
+  },
 };
 
 export default nextConfig;

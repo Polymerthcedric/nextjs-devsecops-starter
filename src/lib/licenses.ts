@@ -109,6 +109,26 @@ export async function findLicenseBySession(
   }
 }
 
+export async function findLicenseByKey(
+  licenseKey: string,
+): Promise<LicenseRecord | null> {
+  if (!isSupabaseConfigured) return null
+  const { data, error } = await getSupabaseClient()
+    .from('licenses')
+    .select('license_key, email, plan, session_id, created_at')
+    .eq('license_key', normalizeLicenseKey(licenseKey))
+    .maybeSingle()
+
+  if (error || !data) return null
+  return {
+    licenseKey: data.license_key,
+    email: data.email,
+    plan: data.plan,
+    sessionId: data.session_id,
+    createdAt: data.created_at,
+  }
+}
+
 // Validates a raw license key string (format only). Used for buyer support:
 // 'DS-XXXXX-XXXXX-XXXXX'
 export function isValidLicenseFormat(key: string): boolean {

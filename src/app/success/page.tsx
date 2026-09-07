@@ -115,14 +115,20 @@ export default async function SuccessPage({
       </p>
 
       <p className="mt-10 max-w-md text-sm text-neutral-500 dark:text-neutral-500">
-        Email us your key on the landing page and we&apos;ll add you to the
-        private repository. It includes the full source, the schema, and the
-        deploy pipeline you just bought.
+        Your key gates the private repo download. The tarball includes the full
+        source, the database schema, and the deploy pipeline you just bought.
       </p>
+
+      <a
+        href={`/api/download?key=${encodeURIComponent(state.license.licenseKey)}`}
+        className="mt-8 rounded-xl bg-[#17130d] px-5 py-2.5 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
+      >
+        Download the starter
+      </a>
 
       <Link
         href="/"
-        className="mt-8 rounded-xl border border-[#dfd9cc] px-5 py-2.5 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
+        className="mt-4 rounded-xl border border-[#dfd9cc] px-5 py-2.5 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
       >
         Back home
       </Link>
