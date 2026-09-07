@@ -12,7 +12,13 @@ for (const extra of (process.env.ALLOWED_ORIGINS ?? '').split(',')) {
   if (extra.trim()) ALLOWED_ORIGINS.add(extra.trim())
 }
 
-function originAllowed(origin: string | null): boolean {
+// An Origin is same-origin when its host matches the host the request was
+// served from (the Host header) or the canonical APP_HOST. Comparing against
+// Host — not a single configured domain — means any hostname pointing at this
+// deployment (custom domain, vercel.app URL, preview deploy) is accepted
+// without env churn. An explicit ALLOWED_ORIGINS entry (full origin, e.g. a
+// staging domain) always wins.
+function originAllowed(origin: string | null, requestHost: string | null): boolean {
   if (!origin) return false
   if (origin === 'null') return false // sandboxed/opaque origins
 
@@ -20,7 +26,7 @@ function originAllowed(origin: string | null): boolean {
 
   try {
     const { host } = new URL(origin)
-    return host === process.env.APP_HOST || host === (process.env.APP_HOST ?? '')
+    return host === requestHost || host === process.env.APP_HOST
   } catch {
     return false
   }
@@ -39,5 +45,5 @@ export function isSameOrigin(request: Request): boolean {
 
   // Origin is authoritative when present; fall back to Referer.
   const source = origin ?? referer
-  return originAllowed(source)
+  return originAllowed(source, request.headers.get('host'))
 }
