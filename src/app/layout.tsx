@@ -28,6 +28,9 @@ export const metadata: Metadata = {
     description:
       "Secure by default. Zero bloat. A Next.js starter with rate limiting, edge RBAC and PBKDF2 auth.",
   },
+  other: {
+    "google-site-verification": "mht0HAr0s0Ii8LoYUngHkdtV5dnl3GLRd8PToaj0tF4",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
