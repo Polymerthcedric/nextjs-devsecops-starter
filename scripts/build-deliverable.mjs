@@ -8,7 +8,7 @@
 // it can only ever be served by the license-checked /api/download route.
 
 import { execSync } from 'node:child_process'
-import { mkdirSync, statSync, readFileSync } from 'node:fs'
+import { mkdirSync, statSync, readFileSync, copyFileSync, existsSync } from 'node:fs'
 import { createWriteStream } from 'node:fs'
 import { spawn } from 'node:child_process'
 
@@ -36,8 +36,18 @@ function trackedFiles() {
   return files.filter(Boolean).filter((f) => f !== 'scripts/deliverable-files.txt')
 }
 
+// Vercel CLI uploads strip `.env*` files, so the tracked .env.example is
+// missing in deploy builds. Restore it from the vendored sample so the
+// shipped tarball keeps `cp .env.example .env.local` working for buyers.
+const ENV_SAMPLE = `${root}/scripts/env.example.sample`
+if (!existsSync(`${root}/.env.example`) && existsSync(ENV_SAMPLE)) {
+  copyFileSync(ENV_SAMPLE, `${root}/.env.example`)
+}
+
 // git ls-files lists exactly the tracked deliverable, with relative paths.
-const files = trackedFiles()
+// Upload-stripped files (e.g. .env*) may not exist on disk; skip them so tar
+// never exits nonzero over a missing member.
+const files = trackedFiles().filter((f) => existsSync(`${root}/${f}`))
 
 if (files.length === 0) {
   console.error('[deliverable] no tracked files; aborting')

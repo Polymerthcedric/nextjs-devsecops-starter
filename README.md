@@ -55,6 +55,7 @@ least-privileged `user` role.
 ```bash
 npm install
 cp .env.example .env.local   # set SESSION_SECRET (and optionally Supabase)
+# In the shipped deliverable the template lives at scripts/env.example.sample.
 npm run dev
 ```
 

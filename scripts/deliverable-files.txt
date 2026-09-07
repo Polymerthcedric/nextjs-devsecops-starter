@@ -9,6 +9,7 @@ package-lock.json
 package.json
 postcss.config.mjs
 scripts/build-deliverable.mjs
+scripts/env.example.sample
 scripts/hash-password.mjs
 src/app/PaddleRedirect.tsx
 src/app/admin/LogoutButton.tsx
