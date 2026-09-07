@@ -15,8 +15,17 @@ declare global {
 
 const PADDLE_CLIENT_TOKEN =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN : ''
+// Sandbox client tokens are prefixed `test_`, live tokens `live_`. Deriving
+// the environment from the token removes a whole class of "wrong env" bugs
+// (a test_ token opened in a live environment fails checkout).
 const PADDLE_ENV =
-  typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'live' : 'live'
+  typeof process !== 'undefined'
+    ? PADDLE_CLIENT_TOKEN.startsWith('test_')
+      ? 'sandbox'
+      : PADDLE_CLIENT_TOKEN.startsWith('live_')
+        ? 'live'
+        : (process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'live')
+    : 'live'
 const APP_URL =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_APP_URL ?? '' : ''
 
