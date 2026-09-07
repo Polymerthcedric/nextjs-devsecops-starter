@@ -8,7 +8,7 @@
 // it can only ever be served by the license-checked /api/download route.
 
 import { execSync } from 'node:child_process'
-import { mkdirSync, statSync } from 'node:fs'
+import { mkdirSync, statSync, readFileSync } from 'node:fs'
 import { createWriteStream } from 'node:fs'
 import { spawn } from 'node:child_process'
 
@@ -18,12 +18,26 @@ const outFile = `${outDir}/starter.tar.gz`
 
 mkdirSync(outDir, { recursive: true })
 
+// Vercel CLI deployments ship no .git, so `git ls-files` is unavailable mid
+// build. Try it first (local builds); fall back to the vendored output of the
+// same command committed at scripts/deliverable-files.txt.
+const FALLBACK_LIST = `${root}/scripts/deliverable-files.txt`
+
+function trackedFiles() {
+  let files
+  try {
+    files = execSync('git ls-files', { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim()
+      .split('\n')
+  } catch {
+    files = readFileSync(FALLBACK_LIST, 'utf8').trim().split('\n')
+  }
+  return files.filter(Boolean).filter((f) => f !== 'scripts/deliverable-files.txt')
+}
+
 // git ls-files lists exactly the tracked deliverable, with relative paths.
-const files = execSync('git ls-files', { cwd: root })
-  .toString()
-  .trim()
-  .split('\n')
-  .filter(Boolean)
+const files = trackedFiles()
 
 if (files.length === 0) {
   console.error('[deliverable] no tracked files; aborting')
