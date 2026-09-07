@@ -13,8 +13,9 @@ declare global {
   }
 }
 
-const PADDLE_CLIENT_TOKEN =
+const rawToken =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN : ''
+const PADDLE_CLIENT_TOKEN = rawToken ?? ''
 // Sandbox client tokens are prefixed `test_`, live tokens `live_`. Deriving
 // the environment from the token removes a whole class of "wrong env" bugs
 // (a test_ token opened in a live environment fails checkout).
