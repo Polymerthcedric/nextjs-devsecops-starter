@@ -5,6 +5,9 @@ import { useState } from 'react'
 declare global {
   interface Window {
     Paddle?: {
+      Environment: {
+        set: (environment: string) => void
+      }
       Initialize: (config: Record<string, unknown>) => void
       Checkout: {
         open: (config: Record<string, unknown>) => Promise<void>
@@ -77,7 +80,8 @@ export default function BuyForm({ configured }: { configured: boolean }) {
       // to the hosted checkout URL Paddle returned.
       if (PADDLE_CLIENT_TOKEN) {
         await loadPaddleJs()
-        window.Paddle!.Initialize({ token: PADDLE_CLIENT_TOKEN, environment: PADDLE_ENV })
+        window.Paddle!.Environment.set(PADDLE_ENV)
+        window.Paddle!.Initialize({ token: PADDLE_CLIENT_TOKEN })
         await window.Paddle!.Checkout.open({
           transactionId,
           customer: email ? { email } : undefined,

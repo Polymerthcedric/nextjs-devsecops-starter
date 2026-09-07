@@ -5,6 +5,9 @@ import { useEffect, useState } from 'react'
 declare global {
   interface Window {
     Paddle?: {
+      Environment: {
+        set: (environment: string) => void
+      }
       Initialize: (config: Record<string, unknown>) => void
       Checkout: {
         open: (config: Record<string, unknown>) => Promise<void>
@@ -47,7 +50,8 @@ export default function PaddleRedirect() {
     let cancelled = false
     loadPaddleJs()
       .then(() => {
-        window.Paddle?.Initialize({ token: PADDLE_CLIENT_TOKEN, environment: PADDLE_ENV })
+        window.Paddle?.Environment.set(PADDLE_ENV)
+        window.Paddle?.Initialize({ token: PADDLE_CLIENT_TOKEN })
         return window.Paddle?.Checkout.open({ transactionId })
       })
       .catch(() => {
