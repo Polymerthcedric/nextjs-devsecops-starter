@@ -29,16 +29,10 @@ export const metadata: Metadata = {
       "Secure by default. Zero bloat. A Next.js starter with rate limiting, edge RBAC and PBKDF2 auth.",
   },
   icons: {
-    icon: [
-      {
-        url: "/images/favicon.svg",
-        type: "image/svg+xml",
-      },
-      {
-        url: "/favicon.ico",
-        sizes: "any",
-      },
-    ],
+    icon: {
+      url: "/images/favicon.svg",
+      type: "image/svg+xml",
+    },
   },
   other: {
     "google-site-verification": "mht0HAr0s0Ii8LoYUngHkdtV5dnl3GLRd8PToaj0tF4",
