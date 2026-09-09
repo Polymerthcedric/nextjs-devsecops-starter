@@ -24,9 +24,26 @@ export const metadata: Metadata = {
   ),
   openGraph: {
     type: "website",
+    url: "https://starter.fidelco.dev/",
+    siteName: "DevSecOps Starter",
     title: "DevSecOps Starter",
     description:
       "Secure by default. Zero bloat. A Next.js starter with rate limiting, edge RBAC and PBKDF2 auth.",
+    images: [
+      {
+        url: "https://starter.fidelco.dev/og.png",
+        width: 1200,
+        height: 630,
+        alt: "DevSecOps Starter — secure-by-default Next.js boilerplate",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DevSecOps Starter",
+    description:
+      "A secure-by-default Next.js boilerplate with rate limiting, edge RBAC and PBKDF2 auth.",
+    images: ["https://starter.fidelco.dev/og.png"],
   },
   icons: {
     icon: {
