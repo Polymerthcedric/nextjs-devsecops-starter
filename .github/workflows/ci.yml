@@ -6,10 +6,18 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     name: Lint, typecheck, test & build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       # Surfaces TS/ESLint errors as failures in CI.
       NEXT_TELEMETRY_DISABLED: '1'
