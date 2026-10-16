@@ -102,7 +102,7 @@ export default async function SuccessPage({
         Here&apos;s your license key
       </h1>
       <p className="mt-3 max-w-md text-neutral-600 dark:text-neutral-400">
-        Keep this somewhere safe — it&apos;s how you access the private repo
+        Keep this somewhere safe — you&apos;ll need it to download your copy
         and future updates.
       </p>
 

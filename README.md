@@ -1,8 +1,8 @@
 # DevSecOps Starter
 
-A hyper-constrained Next.js starter with security baked in — rate limiting,
-role-based access control, and a hard-edged edge middleware — so your app
-survives a viral spike without burning a hole in your wallet.
+A focused Next.js starter with security foundations — rate limiting,
+role-based access control, and request checks — to reduce unnecessary
+downstream work during traffic spikes.
 
 Write it once, ship it everywhere. Secure by default. Zero bloat.
 
@@ -16,8 +16,9 @@ Write it once, ship it everywhere. Secure by default. Zero bloat.
 - **PBKDF2 password hashing** — dependency-free Web Crypto, 210k iterations,
   per-user salt. No plaintext, no native bcrypt modules to fight.
 - **DB-backed users** — Supabase/Postgres when configured, env-seeded fallback
-  when not. Same fail-open philosophy as the Redis limiter: runs anywhere on a
-  free tier with zero config.
+  when not. The repository uses the Supabase JS client with direct table
+  queries; it does not include Prisma/Drizzle, profile CRUD, or an admin user
+  management interface. The in-memory fallback is for local demos only.
 - **Strict security headers** (CSP, HSTS, X-Frame-Options, Permissions-Policy)
   locked into `next.config.ts`.
 - **Origin-based CSRF defense** (`src/lib/csrf.ts`) on every auth POST — strict
@@ -49,6 +50,11 @@ least-privileged `user` role.
 
 **Route guards** at the edge (`src/proxy.ts`) and in-server helpers:
 `requireRole('admin')` for `/admin`, `requireAuth()` for `/dashboard`.
+
+This is username/password authentication only. OAuth, MFA, password reset,
+email verification, and account settings are not implemented. The `/admin`
+page is a protected status/demo page, not a user-management console. Replace
+the demo account and review the auth model before using it with real users.
 
 ## Getting started
 
@@ -109,6 +115,10 @@ Buyers pay on an in-page Paddle.js checkout (or the hosted URL), the success
 page shows their `DS-XXXXX-XXXXX-XXXXX` license key, and `/api/health` reports
 `"paddle": <configured>` for monitoring.
 
+This is a one-time license sale for this starter. The webhook handles
+`transaction.completed` and idempotently issues a license; it does not manage
+recurring subscriptions or buyer billing portals.
+
 ## Deploying
 
 **Vercel** (recommended):
@@ -126,9 +136,28 @@ builds twice. It deploys previews on PRs and production on `main`. Configure
 `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` as repo secrets; until
 `VERCEL_PROJECT_ID` is set the job is skipped so forks still pass CI.
 
-**Self-host** — `npm run build && npm run start`. Point a process manager at
-Port 3000 and put a TLS terminator (Caddy/Nginx) in front. `SESSION_SECRET`
-and `APP_HOST` are mandatory; rate limiting needs the Upstash env vars.
+**Docker self-host** — build with `docker build -t devsecops-starter .` and run
+with your production environment variables, for example:
+
+```sh
+docker run --rm -p 3000:3000 \
+  -e SESSION_SECRET='replace-with-a-random-secret' \
+  -e APP_HOST='your-domain.example' \
+  -e UPSTASH_REDIS_REST_URL='https://...' \
+  -e UPSTASH_REDIS_REST_TOKEN='...' \
+  devsecops-starter
+```
+
+Use a TLS-terminating reverse proxy in front. Add Supabase and Paddle variables
+when those features are enabled. Never bake secrets into the image.
+
+**Node self-host** — `npm run build && npm run start`, with the same production
+environment variables and TLS termination.
+
+Rate limiting is not a hard spend cap or DDoS protection. Every matched
+request still reaches the app proxy and Redis; Redis errors fail open. Hosting,
+bandwidth, and Redis pricing depend on provider plans and traffic. Set provider
+budgets/alerts and upstream traffic controls, and load-test your own workload.
 
 ## Seeding users
 

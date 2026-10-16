@@ -25,7 +25,7 @@ const features = [
   },
   {
     title: 'Pluggable users',
-    desc: 'Supabase/Postgres when configured, env-seeded fallback when not. Same fail-open spirit as Redis.',
+    desc: 'Raw Supabase client queries when configured, with an in-memory demo fallback. No ORM or profile management yet.',
     code: 'src/lib/users.ts',
   },
   {
@@ -104,6 +104,70 @@ export default async function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Cost defense */}
+      <section className="mx-auto max-w-5xl px-6 py-16 sm:px-10">
+        <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
+          Cost defense
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+          Reject excess requests before app routes do their work
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
+          The proxy checks a per-IP Upstash sliding window before auth checks,
+          page rendering, or database queries. This can reduce downstream work;
+          it does not cap hosting, Redis, or network charges, and the Redis
+          check itself runs on each matched request.
+        </p>
+        <div className="mt-6 grid gap-3 text-sm sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center">
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Incoming request</strong><br />
+            <span className="text-neutral-500">Browser, bot, or API client</span>
+          </div>
+          <span className="text-center font-mono text-accent" aria-hidden="true">→</span>
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Next.js proxy + Upstash</strong><br />
+            <span className="text-neutral-500">10 requests / 10 seconds / IP</span>
+          </div>
+          <span className="text-center font-mono text-accent" aria-hidden="true">→</span>
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Allowed request</strong><br />
+            <span className="text-neutral-500">Route, then database if needed</span>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
+          Over-limit requests receive HTTP 429. If Redis errors, this starter
+          fails open; configure provider-level traffic and spend limits too.
+        </p>
+      </section>
+
+      {/* Value comparison */}
+      <section className="border-y border-[#dfd9cc] bg-[#fbfaf7] dark:border-neutral-800 dark:bg-neutral-950/40">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:px-10">
+          <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
+            Skip the repeated setup
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            A working baseline you can adapt
+          </h2>
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-[#dfd9cc] bg-white dark:border-neutral-800 dark:bg-neutral-900">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="border-b border-[#dfd9cc] dark:border-neutral-800">
+                <tr><th className="p-4">Milestone</th><th className="p-4">Build yourself</th><th className="p-4">Starter includes</th></tr>
+              </thead>
+              <tbody className="divide-y divide-[#dfd9cc] dark:divide-neutral-800">
+                <tr><th className="p-4 font-medium">Edge request checks</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Choose and wire up a proxy</td><td className="p-4">Working <code>src/proxy.ts</code></td></tr>
+                <tr><th className="p-4 font-medium">Rate limiting</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Pick a store, set policy, handle errors</td><td className="p-4">Upstash sliding window + fail-open behavior</td></tr>
+                <tr><th className="p-4 font-medium">Auth foundation</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Implement sessions, password hashing, route checks</td><td className="p-4">PBKDF2, HS256 sessions, login and registration</td></tr>
+                <tr><th className="p-4 font-medium">Headers and CI</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Configure, review, and maintain</td><td className="p-4">Security headers and GitHub Actions workflows</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
+            Time varies by product and experience. This starter does not include social login, MFA, ORM models, user administration, or subscription management.
+          </p>
         </div>
       </section>
 

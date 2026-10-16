@@ -10,12 +10,12 @@ async function getPrice() {
 }
 
 const includes = [
-  'Complete Everlast source — every file the demo runs',
+  'Complete starter source — the code behind the live demo',
   'Edge rate limiting + RBAC sessions (Upstash Redis)',
   'PBKDF2 auth + Supabase/Postgres user store',
-  'CI pipeline, deploy pipeline, and 25 unit tests',
+  'CI pipeline, Vercel deploy workflow, Docker deployment, and unit tests',
   'Security headers, CSRF defense, /health probe, SEO files',
-  'License key good for one project, lifetime updates',
+  'One-time purchase with lifetime updates',
 ]
 
 export default async function BuyPage() {
@@ -41,7 +41,7 @@ export default async function BuyPage() {
       <p className="mt-5 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
         One payment. Everything in this repo — the edge proxy, the rate
         limiter, PBKDF2 auth, the CI/deploy pipeline, the license to use it on
-        a real project. Free updates while you own a copy.
+        a real project. Lifetime updates are included.
       </p>
 
       <section className="mt-10 rounded-2xl border border-[#dfd9cc] bg-white p-8 sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
@@ -69,13 +69,34 @@ export default async function BuyPage() {
         <BuyForm configured={configured} />
       </section>
 
+      <section className="mt-8 grid gap-4 sm:grid-cols-2">
+        <article className="rounded-2xl border border-[#dfd9cc] p-6 dark:border-neutral-800">
+          <h2 className="font-semibold">A useful starting point</h2>
+          <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+            Clone the included source, configure your service credentials, and
+            adapt the auth and route examples to your product. You get the code
+            and deployment recipes; hosting and service accounts are yours.
+          </p>
+        </article>
+        <article className="rounded-2xl border border-[#dfd9cc] p-6 dark:border-neutral-800">
+          <h2 className="font-semibold">Know what you are buying</h2>
+          <p className="mt-2 text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+            This is a username/password auth baseline with one-time Paddle
+            license checkout. OAuth, MFA, password reset, profile management,
+            admin user management, and recurring subscriptions are not
+            included.
+          </p>
+        </article>
+      </section>
+
       <section className="mt-8 rounded-2xl border border-[#dfd9cc] p-6 dark:border-neutral-800">
         <h3 className="font-semibold">Wondering if it&apos;s worth it?</h3>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
           Try the live demo first. Sign in as{' '}
           <code className="font-mono">admin / admin123</code> and watch
-          /admin admit and bounce people at the edge. Same code you&apos;d be
-          buying.
+          /admin admit and bounce people at the request proxy. The demo
+          account is for evaluation only; set up your own credentials for a
+          deployment.
         </p>
         <a
           href="/admin"
