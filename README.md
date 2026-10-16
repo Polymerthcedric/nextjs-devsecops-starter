@@ -1,24 +1,25 @@
 # DevSecOps Starter
 
-A focused Next.js starter with security foundations — rate limiting,
-role-based access control, and request checks — to reduce unnecessary
-downstream work during traffic spikes.
+A Next.js starter with rate limiting, role-based route checks, and
+username/password authentication. It gives you a working base to adapt to
+your app.
 
-Write it once, ship it everywhere. Secure by default. Zero bloat.
+Small dependency footprint. Clear examples. Your app stays yours.
 
 ## What you get
 
-- **Edge proxy** (`src/proxy.ts`) that runs before a single component renders
-- **Rate limiting** via Upstash Redis sliding window — 10 req / 10 s / IP. The
-  bouncer that stops the infrastructure death spiral before it reaches your DB.
-- **RBAC sessions** — signed, httpOnly JWT cookies verified at the edge.
+- **Request proxy** (`src/proxy.ts`) that checks requests before protected
+  pages render
+- **Rate limiting** via Upstash Redis sliding window — 10 requests per 10
+  seconds per IP. Over-limit requests receive HTTP 429.
+- **RBAC sessions** — signed, httpOnly JWT cookies checked by the request proxy.
   `/admin` is gated to the `admin` role; everyone else gets bounced to `/login`.
-- **PBKDF2 password hashing** — dependency-free Web Crypto, 210k iterations,
-  per-user salt. No plaintext, no native bcrypt modules to fight.
+- **PBKDF2 password hashing** — Web Crypto, 210,000 iterations, and a
+  per-user salt.
 - **DB-backed users** — Supabase/Postgres when configured, env-seeded fallback
   when not. The repository uses the Supabase JS client with direct table
-  queries; it does not include Prisma/Drizzle, profile CRUD, or an admin user
-  management interface. The in-memory fallback is for local demos only.
+  queries; it does not include Prisma or Drizzle, profile management, or an
+  admin user-management interface. The in-memory fallback is for local demos.
 - **Strict security headers** (CSP, HSTS, X-Frame-Options, Permissions-Policy)
   locked into `next.config.ts`.
 - **Origin-based CSRF defense** (`src/lib/csrf.ts`) on every auth POST — strict
@@ -48,7 +49,7 @@ Supabase (optional) · Web Crypto (no auth deps)
 Pluggable behind `src/lib/users.ts`. New signups always start with the
 least-privileged `user` role.
 
-**Route guards** at the edge (`src/proxy.ts`) and in-server helpers:
+**Route guards** in the request proxy (`src/proxy.ts`) and server helpers:
 `requireRole('admin')` for `/admin`, `requireAuth()` for `/dashboard`.
 
 This is username/password authentication only. OAuth, MFA, password reset,

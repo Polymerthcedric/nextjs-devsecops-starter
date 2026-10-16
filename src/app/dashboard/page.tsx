@@ -7,9 +7,9 @@ export default async function DashboardPage() {
   const isAdmin = session.role === 'admin'
 
   const perks = [
-    'Members-only content served entirely on the free tier',
-    'Edge-enforced session: no flash of protected data to guests',
-    'Upstash rate limiter standing at the door of every request',
+    'A protected route for signed-in users',
+    'Session checks in the request proxy and on the server',
+    'An Upstash rate limit for matched requests',
   ]
 
   return (
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
               Welcome, {session.username}
             </h1>
             <p className="mt-1 text-[15px] text-neutral-600 dark:text-neutral-400">
-              Your session was verified at the edge. Membership territory.
+              Your session was checked before this page loaded.
             </p>
           </div>
           <LogoutButton />

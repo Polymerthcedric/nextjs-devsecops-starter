@@ -20,13 +20,13 @@ export default async function AdminPage() {
     {
       label: 'Password hash',
       value: 'PBKDF2 210k',
-      note: 'edge-verified, no plaintext',
+      note: 'hashed with PBKDF2',
       status: 'up',
     },
     {
       label: 'Access',
       value: 'ADMIN',
-      note: 'RBAC enforced at edge',
+      note: 'checked in the request proxy',
       status: 'up',
     },
   ]
@@ -43,8 +43,8 @@ export default async function AdminPage() {
               Admin dashboard
             </h1>
             <p className="mt-1 text-[15px] text-neutral-600 dark:text-neutral-400">
-              Signed in as <span className="font-semibold">{session.username}</span> — your
-              session was verified at the edge before this rendered.
+              Signed in as <span className="font-semibold">{session.username}</span>. The
+              request proxy checked your session before this page loaded.
             </p>
           </div>
           <LogoutButton />
@@ -80,12 +80,12 @@ export default async function AdminPage() {
             <h2 className="mt-2 text-lg font-semibold">Protected before React renders</h2>
             <ul className="mt-4 space-y-2 text-sm text-neutral-600 dark:text-neutral-400">
               <li>
-                <code className="font-mono text-accent">bouncer</code> — Upstash Redis
-                sliding-window rate limit stops the death spiral before any DB read.
+                <code className="font-mono text-accent">rate limit</code> — Upstash Redis
+                checks request counts before the route runs.
               </li>
               <li>
-                <code className="font-mono text-accent">rbac</code> — the signed, httpOnly
-                session cookie is verified in the proxy; non-admins never reach this page.
+                <code className="font-mono text-accent">roles</code> — the proxy checks the
+                signed session cookie before allowing this page to load.
               </li>
               <li>
                 <code className="font-mono text-accent">headers</code> — CSP, HSTS and
@@ -122,7 +122,7 @@ export default async function AdminPage() {
         </section>
 
         <p className="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
-          Protected at the edge. If your session expires or you lack the{" "}
+          This page requires a valid session with the{" "}
           <code className="font-mono text-accent">admin</code> role, the proxy bounces
           you to <code className="font-mono text-accent">/login</code> before a single
           component renders.

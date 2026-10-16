@@ -19,7 +19,7 @@ export default function LoginPage() {
           Sign in
         </h1>
         <p className="mb-8 text-neutral-600 dark:text-neutral-400">
-          Secure by default. Role-gated behind the edge.
+          Sign in to the demo account or create a local demo user.
         </p>
         <LoginFormBoundary />
         <div className="mt-8 rounded-lg border border-dashed border-[#dfd9cc] p-4 text-sm text-neutral-500 dark:border-neutral-700">

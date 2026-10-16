@@ -11,7 +11,7 @@ async function getPrice() {
 
 const includes = [
   'Complete starter source — the code behind the live demo',
-  'Edge rate limiting + RBAC sessions (Upstash Redis)',
+  'Upstash rate limiting and role checks',
   'PBKDF2 auth + Supabase/Postgres user store',
   'CI pipeline, Vercel deploy workflow, Docker deployment, and unit tests',
   'Security headers, CSRF defense, /health probe, SEO files',
@@ -34,14 +34,14 @@ export default async function BuyPage() {
         Get the code
       </p>
       <h1 className="mt-4 text-4xl font-semibold leading-[0.98] tracking-tight sm:text-5xl">
-        The last auth stack
+        A head start on auth
         <br />
-        you&apos;ll hand-roll.
+        and deployment.
       </h1>
       <p className="mt-5 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-        One payment. Everything in this repo — the edge proxy, the rate
-        limiter, PBKDF2 auth, the CI/deploy pipeline, the license to use it on
-        a real project. Lifetime updates are included.
+        One payment for the starter source: route checks, rate limiting,
+        username/password auth, tests, and deployment examples. Lifetime
+        updates are included.
       </p>
 
       <section className="mt-10 rounded-2xl border border-[#dfd9cc] bg-white p-8 sm:p-10 dark:border-neutral-800 dark:bg-neutral-900">
@@ -107,8 +107,7 @@ export default async function BuyPage() {
       </section>
 
       <p className="mt-8 text-center font-mono text-xs text-neutral-500 dark:text-neutral-500">
-        Payment handled by Paddle · license key delivered instantly · the code
-        is the product
+        Paddle handles payment · the license key unlocks the download
       </p>
     </main>
   )
