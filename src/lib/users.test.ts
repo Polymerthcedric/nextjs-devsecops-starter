@@ -15,6 +15,8 @@ describe('user repository (fallback store)', () => {
     expect(user).not.toBeNull()
     expect(user?.role).toBe('admin')
     expect(user?.passwordHash).toMatch(/^pbkdf2\$/)
+    const { verifyPassword } = await import('./password')
+    expect(await verifyPassword('admin123', user!.passwordHash)).toBe(true)
   })
 
   it('returns null for an unknown username', async () => {

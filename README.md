@@ -80,7 +80,7 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiter backend |
 | `SESSION_SECRET` | HMAC secret (JWT signing) |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Postgres user store (optional) |
-| `DEMO_USERS` | Env-seeded fallback users (JSON) |
+| `DEMO_USERS` | Optional demo users as JSON. Works with or without Supabase and takes precedence over database users with the same username. |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
 | `NEXT_PUBLIC_APP_URL` | Public base URL for SEO (metadata, robots.txt, sitemap) |
 | `PADDLE_ENV` / `PADDLE_API_KEY` / `PADDLE_PRICE_ID` | Paddle Billing (Merchant of Record) — checkout + license sales |
@@ -169,6 +169,12 @@ npm run hash-password -- 'a-strong-password'
 ```
 
 `supabase/schema.sql` has the `users` table DDL and an admin seed row.
+
+For a hosted demo that uses Supabase, set `DEMO_USERS` in the hosting
+provider's production environment to a JSON array containing the demo account
+and its generated `passwordHash`. Redeploy after changing environment
+variables. The built-in `admin / admin123` account is available only for local
+development when Supabase and `DEMO_USERS` are both unset.
 
 ## Scripts
 

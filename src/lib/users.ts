@@ -43,6 +43,19 @@ function fallbackUsers(): UserRecord[] {
   ]
 }
 
+function configuredDemoUser(username: string): UserRecord | null {
+  const raw = process.env.DEMO_USERS
+  if (!raw) return null
+
+  try {
+    const users = JSON.parse(raw) as UserRecord[]
+    if (!Array.isArray(users)) return null
+    return users.find((user) => user.username === username) ?? null
+  } catch {
+    return null
+  }
+}
+
 let fallbackStore: UserRecord[] | null = null
 
 function getFallbackStore(): UserRecord[] {
@@ -100,10 +113,16 @@ export async function getUserByUsername(
   username: string,
 ): Promise<UserRecord | null> {
   if (isSupabaseConfigured) {
+    // Explicit demo users may coexist with the database, but the built-in
+    // local-only admin is never enabled just because a database lookup fails.
+    const demoUser = configuredDemoUser(username)
+    if (demoUser) return demoUser
+
     try {
       return await getSupabaseUser(username)
     } catch (e) {
       console.error('Supabase user lookup error:', e)
+      return null
     }
   }
   return getFallbackStore().find((u) => u.username === username) ?? null
