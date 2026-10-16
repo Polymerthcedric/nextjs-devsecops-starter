@@ -1,6 +1,5 @@
-// Edge-safe session (JWT) helpers. Pure Web Crypto — no Next.js server-only
-// imports and no database dependencies, so this bundles cleanly into the
-// proxy (edge middleware) runtime.
+// Session helpers use Web Crypto and do not depend on a database or
+// Node-specific crypto modules, so they can be reused in route and proxy code.
 
 export type Role = 'admin' | 'user'
 

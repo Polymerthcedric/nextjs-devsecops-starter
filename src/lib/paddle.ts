@@ -6,7 +6,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 // Flow: the server creates a transaction (POST /transactions, automatic
 // collection), the buyer pays on a Paddle-hosted checkout (overlay or
 // redirect), and a `transaction.completed` webhook mints the license. The
-// success page mints idempotently too, so the buyer sees the key instantly.
+// success page mints idempotently too, so the buyer can retrieve the key from the success page.
 //
 // A default payment link must be set + approved under
 // Paddle > Checkout > Checkout settings > Default payment link before any

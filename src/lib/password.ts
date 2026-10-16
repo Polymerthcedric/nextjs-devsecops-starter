@@ -1,5 +1,5 @@
 // PBKDF2 password hashing using the Web Crypto API.
-// Edge-compatible and dependency-free: no bcrypt/argon2 native modules,
+// Web Crypto based and dependency-free: no bcrypt/argon2 native modules,
 // so this boilerplate still runs on any free-tier runtime.
 //
 // Format: pbkdf2$<iterations>$<saltB64>$<hashB64>

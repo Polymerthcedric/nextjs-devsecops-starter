@@ -9,7 +9,7 @@ export async function proxy(request: NextRequest) {
     '127.0.0.1'
   
   // -------------------------------------------------------
-  // 1. THE BOUNCER (Stop the Infrastructure Death Spiral)
+  // Check the request before it reaches protected application routes.
   // -------------------------------------------------------
   // We check Redis rate limits BEFORE any expensive DB queries, 
   // rendering cycles, or auth verifications. Compute stops here.

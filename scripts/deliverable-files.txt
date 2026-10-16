@@ -1,4 +1,6 @@
 .env.example
+.dockerignore
+Dockerfile
 .github/workflows/ci.yml
 .github/workflows/deploy.yml
 .gitignore

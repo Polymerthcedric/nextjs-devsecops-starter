@@ -4,28 +4,28 @@ import PaddleRedirect from './PaddleRedirect'
 
 const features = [
   {
-    title: 'Edge proxy',
-    desc: 'Every request passes the bouncer before React renders. Guests never see a flash of protected content.',
+    title: 'Request proxy',
+    desc: 'Checks sessions and protected paths before the app renders a page.',
     code: 'src/proxy.ts',
   },
   {
     title: 'Rate limiting',
-    desc: 'Upstash Redis sliding window — 10 req / 10 s / IP. The infrastructure death spiral stops at the door.',
+    desc: 'Upstash sliding window: 10 requests per 10 seconds per IP. Over-limit requests get a 429 response.',
     code: 'src/lib/ratelimit.ts',
   },
   {
     title: 'RBAC sessions',
-    desc: 'Signed, httpOnly HS256 JWTs verified at the edge. /admin is admin-only; /dashboard for members.',
+    desc: 'Signed, httpOnly HS256 session cookies. The admin and member routes check the user role.',
     code: 'src/lib/session.ts',
   },
   {
     title: 'PBKDF2 auth',
-    desc: 'Password hashing via Web Crypto — 210k iterations, per-user salt, zero native dependencies.',
+    desc: 'Web Crypto PBKDF2 hashing with 210,000 iterations and a per-user salt.',
     code: 'src/lib/password.ts',
   },
   {
     title: 'Pluggable users',
-    desc: 'Supabase/Postgres when configured, env-seeded fallback when not. Same fail-open spirit as Redis.',
+    desc: 'Raw Supabase client queries when configured, with an in-memory demo fallback. No ORM or profile management yet.',
     code: 'src/lib/users.ts',
   },
   {
@@ -54,14 +54,14 @@ export default async function Home() {
           DevSecOps starter
         </p>
         <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl">
-          Secure by default.
+          A practical start
           <br />
-          Zero bloat.
+          for your next app.
         </h1>
         <p className="mt-6 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-          A hyper-constrained Next.js boilerplate with rate limiting, edge RBAC
-          and PBKDF2 auth baked in — so a viral spike can&apos;t bankrupt you and
-          guests never see a byte they shouldn&apos;t.
+          A Next.js starter with rate limiting, role-based route checks, and
+          password authentication already connected. Use it as a starting
+          point, then adapt it to your app.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <a
@@ -86,7 +86,7 @@ export default async function Home() {
             Ships with
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-            Everything the boring, expensive setup would take weeks of
+            Common setup, already wired together
           </h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
@@ -107,6 +107,70 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Cost defense */}
+      <section className="mx-auto max-w-5xl px-6 py-16 sm:px-10">
+        <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
+          Cost defense
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+          Reject excess requests before app routes do their work
+        </h2>
+        <p className="mt-3 max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
+          The proxy checks a per-IP Upstash sliding window before auth checks,
+          page rendering, or database queries. This can reduce downstream work;
+          it does not cap hosting, Redis, or network charges, and the Redis
+          check itself runs on each matched request.
+        </p>
+        <div className="mt-6 grid gap-3 text-sm sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-center">
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Incoming request</strong><br />
+            <span className="text-neutral-500">Browser, bot, or API client</span>
+          </div>
+          <span className="text-center font-mono text-accent" aria-hidden="true">→</span>
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Next.js proxy + Upstash</strong><br />
+            <span className="text-neutral-500">10 requests / 10 seconds / IP</span>
+          </div>
+          <span className="text-center font-mono text-accent" aria-hidden="true">→</span>
+          <div className="rounded-xl border border-[#dfd9cc] bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900">
+            <strong>Allowed request</strong><br />
+            <span className="text-neutral-500">Route, then database if needed</span>
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
+          Over-limit requests receive HTTP 429. If Redis errors, this starter
+          fails open; configure provider-level traffic and spend limits too.
+        </p>
+      </section>
+
+      {/* Value comparison */}
+      <section className="border-y border-[#dfd9cc] bg-[#fbfaf7] dark:border-neutral-800 dark:bg-neutral-950/40">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:px-10">
+          <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
+            Skip the repeated setup
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+            A working baseline you can adapt
+          </h2>
+          <div className="mt-6 overflow-x-auto rounded-2xl border border-[#dfd9cc] bg-white dark:border-neutral-800 dark:bg-neutral-900">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="border-b border-[#dfd9cc] dark:border-neutral-800">
+                <tr><th className="p-4">Milestone</th><th className="p-4">Build yourself</th><th className="p-4">Starter includes</th></tr>
+              </thead>
+              <tbody className="divide-y divide-[#dfd9cc] dark:divide-neutral-800">
+                <tr><th className="p-4 font-medium">Request checks</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Choose and wire up a proxy</td><td className="p-4">Working <code>src/proxy.ts</code></td></tr>
+                <tr><th className="p-4 font-medium">Rate limiting</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Pick a store, set policy, handle errors</td><td className="p-4">Upstash sliding window + fail-open behavior</td></tr>
+                <tr><th className="p-4 font-medium">Auth foundation</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Implement sessions, password hashing, route checks</td><td className="p-4">PBKDF2, HS256 sessions, login and registration</td></tr>
+                <tr><th className="p-4 font-medium">Headers and CI</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Configure, review, and maintain</td><td className="p-4">Security headers and GitHub Actions workflows</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-3 text-xs text-neutral-500 dark:text-neutral-500">
+            Time varies by product and experience. This starter does not include social login, MFA, ORM models, user administration, or subscription management.
+          </p>
+        </div>
+      </section>
+
       {/* Auth cta */}
       <section className="mx-auto max-w-5xl px-6 py-16 sm:px-10">
         <div className="rounded-2xl border border-[#dfd9cc] p-8 sm:p-10">
@@ -114,12 +178,11 @@ export default async function Home() {
             Try the auth flow
           </p>
           <h2 className="mt-2 max-w-lg text-2xl font-semibold tracking-tight">
-            Watch /admin bounce a guest, then let them in like a bouncer.
+            Try the protected routes
           </h2>
           <p className="mt-4 max-w-xl text-sm text-neutral-600 dark:text-neutral-400">
-            Demo credentials: <code className="font-mono">admin</code> /{' '}
-            <code className="font-mono">admin123</code> — or create your own
-            account in a click. It&apos;s the same code a buyer would get.
+            Sign in with the demo account or create a local demo user. The
+            admin page is a status example; it does not manage users.
           </p>
           <div className="mt-6 flex flex-wrap gap-4">
             <a
@@ -137,7 +200,7 @@ export default async function Home() {
           </div>
         </div>
         <p className="mt-8 text-center font-mono text-xs text-neutral-500 dark:text-neutral-500">
-          Rate limited at the edge · Sessions verified per request · A template, not a toy
+          Requests checked before protected routes · Sessions verified per request
         </p>
       </section>
 
@@ -148,12 +211,11 @@ export default async function Home() {
             Get the code
           </p>
           <h2 className="mx-auto mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
-            Stop rebuilding auth. Ship the thing that makes money.
+            Start with the foundation. Build your app on top.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
-            The entire repo — edge proxy, rate limiter, RBAC, tests, deploy
-            pipeline — for one payment, with lifetime updates. You&apos;re
-            looking at the live product, not a mockup.
+            Get the starter source, its tests, and deployment examples with a
+            one-time purchase. Lifetime updates are included.
           </p>
           <div className="mt-8">
             <a
