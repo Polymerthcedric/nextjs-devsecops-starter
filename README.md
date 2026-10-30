@@ -61,10 +61,14 @@ the demo account and review the auth model before using it with real users.
 
 ```bash
 npm install
-cp .env.example .env.local   # set SESSION_SECRET (and optionally Supabase)
-# In the shipped deliverable the template lives at scripts/env.example.sample.
+npm run setup                 # creates .env.local with a fresh SESSION_SECRET
+# Review .env.local and set any services you plan to use.
 npm run dev
 ```
+
+The setup command never overwrites an existing `.env.local`. If that file
+already exists, it checks that `SESSION_SECRET` is set and asks you to resolve
+an unset or placeholder value yourself.
 
 Open http://localhost:3000, try `/admin` logged out, then sign in as
 `admin / admin123` — or create your own account via `/register`.

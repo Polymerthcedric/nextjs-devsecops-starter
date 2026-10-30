@@ -13,6 +13,7 @@ postcss.config.mjs
 scripts/build-deliverable.mjs
 scripts/env.example.sample
 scripts/hash-password.mjs
+scripts/init.mjs
 src/app/PaddleRedirect.tsx
 src/app/admin/LogoutButton.tsx
 src/app/admin/page.tsx

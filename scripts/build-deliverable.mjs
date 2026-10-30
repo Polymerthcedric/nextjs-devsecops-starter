@@ -24,16 +24,21 @@ mkdirSync(outDir, { recursive: true })
 const FALLBACK_LIST = `${root}/scripts/deliverable-files.txt`
 
 function trackedFiles() {
-  let files
+  let files = []
   try {
     files = execSync('git ls-files', { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] })
       .toString()
       .trim()
       .split('\n')
   } catch {
-    files = readFileSync(FALLBACK_LIST, 'utf8').trim().split('\n')
+    // Use the explicit product manifest in deploy environments without .git.
   }
-  return files.filter(Boolean).filter((f) => f !== 'scripts/deliverable-files.txt')
+  const manifestFiles = readFileSync(FALLBACK_LIST, 'utf8').trim().split('\n')
+  // Include manifest entries in local builds too, so newly added deliverable
+  // files are packaged before their changes have been committed.
+  return [...new Set([...files, ...manifestFiles])]
+    .filter(Boolean)
+    .filter((f) => f !== 'scripts/deliverable-files.txt')
 }
 
 // Vercel CLI uploads strip `.env*` files, so the tracked .env.example is
