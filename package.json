@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "node scripts/build-deliverable.mjs && next build",
     "start": "next start",
+    "setup": "node scripts/init.mjs",
     "lint": "eslint",
     "test": "vitest run",
     "hash-password": "node scripts/hash-password.mjs"

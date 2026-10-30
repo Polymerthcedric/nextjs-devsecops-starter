@@ -28,20 +28,25 @@ async function getLicense(transactionId: string): Promise<LicenseResult> {
     return { done: false as const, reason: 'unpaid' }
   }
 
+  if (!txn.priceIds.includes(process.env.PADDLE_PRICE_ID ?? '')) {
+    return { done: false as const, reason: 'invalid-session' }
+  }
+
   const existing = await findLicenseBySession(transactionId)
   if (existing) {
     return { done: true as const, license: existing }
   }
 
-  const email =
-    txn.email ??
-    (txn.customerId ? await getPaddleCustomerEmail(txn.customerId).catch(() => null) : null) ??
-    'buyer@paddle.com'
+  const email = txn.email?.trim() ||
+    (txn.customerId ? await getPaddleCustomerEmail(txn.customerId).catch(() => null) : null)
+  if (!email?.trim()) {
+    return { done: false as const, reason: 'store-unavailable' }
+  }
 
   // Idempotent: session_id has a unique index, so a concurrent claim either
   // inserts once or finds the winner.
   const license = await createLicense({
-    email,
+    email: email.trim(),
     sessionId: transactionId,
   })
 

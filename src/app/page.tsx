@@ -231,6 +231,23 @@ export default async function Home() {
               Try it first
             </a>
           </div>
+          <p className="mt-8 text-sm text-neutral-600 dark:text-neutral-400">
+            Looking for a free browser tool?{' '}
+            <a
+              href="https://tool.fidelco.dev"
+              className="font-medium text-accent underline underline-offset-4"
+            >
+              Generate a Zustand store from JSON
+            </a>
+            .{' '}
+            <a
+              href="https://fidelco.dev/#projects"
+              className="font-medium text-accent underline underline-offset-4"
+            >
+              See my other projects
+            </a>
+            .
+          </p>
         </div>
       </section>
     </main>

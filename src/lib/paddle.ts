@@ -102,6 +102,11 @@ export async function getPaddleTransaction(transactionId: string) {
     status: txn.status as string,
     customerId: (txn.customer_id as string | undefined) ?? null,
     email: (txn.customer?.email as string | undefined) ?? null,
+    priceIds: Array.isArray(txn.items)
+      ? txn.items.flatMap((item: { price_id?: unknown }) =>
+          typeof item?.price_id === 'string' ? [item.price_id] : [],
+        )
+      : [],
   }
 }
 

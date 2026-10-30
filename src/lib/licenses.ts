@@ -56,6 +56,12 @@ export async function createLicense(input: {
   sessionId: string
   plan?: string
 }): Promise<LicenseRecord | null> {
+  const email = input.email.trim().toLowerCase()
+  if (!email) {
+    console.error('License create failed: customer email is empty')
+    return null
+  }
+
   if (!isSupabaseConfigured) {
     console.error('License create failed: Supabase not configured')
     return null
@@ -66,7 +72,7 @@ export async function createLicense(input: {
 
   const record: LicenseRecord = {
     licenseKey: generateLicenseKey(),
-    email: input.email.trim().toLowerCase(),
+    email,
     plan: input.plan ?? 'lifetime',
     sessionId: input.sessionId,
     createdAt: new Date().toISOString(),
@@ -82,6 +88,10 @@ export async function createLicense(input: {
     })
 
   if (error) {
+    // A simultaneous webhook and success-page claim may race on the unique
+    // session_id constraint. Return the winner's record when it has landed.
+    const existing = await findLicenseBySession(input.sessionId)
+    if (existing) return existing
     console.error('License create error:', error)
     return null
   }
