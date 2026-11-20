@@ -215,6 +215,10 @@ lint → tests → production build, with `npm ci` for reproducible installs.
 The workflow injects a throwaway, non-secret `SESSION_SECRET` so the build's
 fail-open paths resolve without real credentials in CI.
 
+## License
+
+MIT — see [LICENSE](LICENSE).
+
 ---
 
 The source is public and open source. Fork it, run it locally, and adapt it.

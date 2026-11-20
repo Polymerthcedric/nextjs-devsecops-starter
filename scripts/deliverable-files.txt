@@ -4,6 +4,7 @@ Dockerfile
 .github/workflows/ci.yml
 .github/workflows/deploy.yml
 .gitignore
+LICENSE
 README.md
 eslint.config.mjs
 next.config.ts
