@@ -39,6 +39,40 @@ Small dependency footprint. Clear examples. Your app stays yours.
 Next.js 16 · React 19 · Tailwind CSS 4 · TypeScript · Upstash Redis ·
 Supabase (optional) · Web Crypto (no auth deps)
 
+## What each service does
+
+| Part | Role in this project |
+| --- | --- |
+| Next.js 16 | Serves pages and route handlers. `src/proxy.ts` checks requests before protected pages render. |
+| Web Crypto | Hashes passwords with PBKDF2 and signs session cookies with HS256. No auth library is used. |
+| Upstash Redis | Holds the sliding-window rate limit counters. This runs in production when both Upstash variables are set. |
+| Supabase / Postgres | Stores users in `public.users` and issued licenses in `public.licenses`. This is the only durable store. The server uses the Supabase JS client with a secret key. The browser never sees that key. |
+| Paddle Sandbox | Creates transactions, hosts the checkout, and sends `transaction.completed`. The webhook turns that event into a license row in Supabase. Sandbox mode uses test cards and creates no real charge. |
+| Node `crypto` | Verifies the raw `Paddle-Signature` header with HMAC-SHA256 before any webhook work. |
+| Vercel | Hosts the app, stores environment variables, and builds each deployment. |
+
+### Supabase keys
+
+Supabase issues short `sb_publishable_...` and `sb_secret_...` keys. Older
+projects also have JWT keys named `anon` and `service_role`. Both sets work at
+the same time.
+
+- `sb_publishable_...` replaces `anon`. Use it only in browser or client code.
+  This starter does not need it.
+- `sb_secret_...` replaces `service_role`. It maps to the Postgres
+  `service_role` role and bypasses Row Level Security. Put it in
+  `SUPABASE_SERVICE_ROLE_KEY`. Keep it on the server.
+- The project ref is the subdomain in `SUPABASE_URL`. A project UUID is another
+  identifier. Neither is an API key.
+
+Find the keys under **Settings > API Keys** in the Supabase dashboard. The
+**Connect** dialog shows the URL and the publishable key. The CLI command
+`supabase projects api-keys --remote=<project-ref>` lists all keys.
+
+The variable keeps its old name because the code reads
+`SUPABASE_SERVICE_ROLE_KEY`. Its value may be a new `sb_secret_...` key or a
+legacy `eyJ...` service-role JWT.
+
 ## Auth
 
 | Endpoint | Description |
@@ -85,18 +119,21 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 
 ## Env vars
 
-| Variable | Purpose |
-| --- | --- |
-| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiter backend |
-| `SESSION_SECRET` | HMAC secret (JWT signing) |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` | Postgres user store (optional) |
-| `DEMO_USERS` | Optional demo users as JSON. Works with or without Supabase and takes precedence over database users with the same username. |
-| `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
-| `NEXT_PUBLIC_APP_URL` | Public base URL for SEO (metadata, robots.txt, sitemap) |
-| `PADDLE_ENV` / `PADDLE_API_KEY` / `PADDLE_PRICE_ID` | Paddle API environment (`sandbox` for the demo), server key, and sandbox price id |
-| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public Paddle.js client token for the in-page checkout overlay (`test_...` forces sandbox) |
-| `NEXT_PUBLIC_PADDLE_ENV` | Explicit Paddle.js environment (`sandbox` or `live`) when no token prefix is present |
-| `PADDLE_WEBHOOK_SECRET` | Paddle `transaction.completed` webhook signing secret |
+| Variable | Role | Where it comes from |
+| --- | --- | --- |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiter backend | Upstash dashboard, REST API section |
+| `SESSION_SECRET` | HMAC key for signed session cookies | Generate with `openssl rand -base64 32` |
+| `SUPABASE_URL` | Project URL for the user and license tables | Supabase Connect dialog |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only key for both tables. Bypasses Row Level Security. | Supabase **Settings > API Keys**. Use `sb_secret_...` or a legacy service-role JWT. |
+| `DEMO_USERS` | Optional fallback users as JSON. Takes precedence over a database user with the same username. | Local JSON generated with `npm run hash-password` |
+| `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation | Your canonical host and any extra allowed origins |
+| `NEXT_PUBLIC_APP_URL` | Public base URL for metadata, robots.txt, and sitemap.xml | Your canonical domain |
+| `PADDLE_ENV` | API environment. Use `sandbox` for this demo. | Paddle account environment |
+| `PADDLE_API_KEY` | Server key that creates transactions and reads them back | Paddle **Developer Tools > Authentication**. Sandbox keys contain `_sdbx`. |
+| `PADDLE_PRICE_ID` | The one-time price used for the demo checkout | Paddle **Catalog > Products**, a `pri_...` id |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public token that starts the Paddle.js overlay | Paddle **Developer Tools > Authentication**. Use `test_...` for sandbox. |
+| `NEXT_PUBLIC_PADDLE_ENV` | Explicit Paddle.js environment when the token has no prefix | Set to `sandbox` for this demo |
+| `PADDLE_WEBHOOK_SECRET` | Verifies `transaction.completed` signatures | The `endpoint_secret_key` of the Paddle notification destination, not its `ntfset_...` id |
 
 ## Operations
 
@@ -109,6 +146,13 @@ uptime monitors:
 
 Each `services` field is a boolean "is configured" flag — no secrets, no
 upstream calls, so the probe never crashes on a misconfigured local env.
+These flags do not prove that a service works. `"database": true` only means
+both Supabase variables exist. It does not check DNS, the key, or the tables.
+
+To check the full license path, sign a test `transaction.completed` event with
+the Paddle endpoint secret key and POST it to `/api/paddle/webhook`. A `200`
+with `{"received":true}` and a new row in `public.licenses` proves Paddle,
+signature verification, and Supabase all work.
 
 ## Paddle Sandbox checkout (demo)
 
@@ -124,8 +168,9 @@ payouts. To wire it up in your own deployment:
 3. Under **Checkout > Checkout settings > Default payment link**, add and get
    an **approved** payment link — required before hosted checkout works.
 4. Under **Developer Tools > Event delivery**, create a webhook destination
-   for `https://your-domain/api/paddle/webhook`, subscribe to
-   `transaction.completed`, and copy the secret into `PADDLE_WEBHOOK_SECRET`.
+   for `https://your-domain/api/paddle/webhook` and subscribe to
+   `transaction.completed`. Copy the destination's `endpoint_secret_key` into
+   `PADDLE_WEBHOOK_SECRET`. Do not copy the `ntfset_...` destination id.
 
 Visitors can complete a successful checkout with Paddle's test card:
 `4242 4242 4242 4242`, any future expiry, any 3-digit CVC. No real card is
