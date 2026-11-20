@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
   if (!isPaddleConfigured()) {
     return NextResponse.json(
-      { error: 'Paddle is not configured yet' },
+      { error: 'Paddle Sandbox is not configured yet' },
       { status: 503 },
     )
   }
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Checkout create failed:', error)
     return NextResponse.json(
-      { error: 'Could not start checkout. Is a default payment link approved?' },
+      { error: 'Could not start sandbox checkout. Is a default payment link approved?' },
       { status: 502 },
     )
   }

@@ -2,6 +2,9 @@ import { COOKIE_NAME, verifySession } from '@/lib/session'
 import { cookies } from 'next/headers'
 import PaddleRedirect from './PaddleRedirect'
 
+const REPO_URL = 'https://github.com/Polymerthcedric/nextjs-devsecops-starter'
+const WEBHOOK_URL = `${REPO_URL}/blob/main/src/app/api/paddle/webhook/route.ts`
+
 const features = [
   {
     title: 'Request proxy',
@@ -33,6 +36,11 @@ const features = [
     desc: 'CSP, HSTS, X-Frame-Options and Permissions-Policy locked into next.config.ts.',
     code: 'next.config.ts',
   },
+  {
+    title: 'Sandbox webhook',
+    desc: 'Verifies the Paddle-Signature header with Node crypto, then mints a demo license idempotently.',
+    code: 'src/app/api/paddle/webhook/route.ts',
+  },
 ]
 
 export default async function Home() {
@@ -40,8 +48,6 @@ export default async function Home() {
   const token = store.get(COOKIE_NAME)?.value
   const session = token ? await verifySession(token) : null
 
-  const primaryHref = session ? '/dashboard' : '/login'
-  const primaryLabel = session ? `Continue as ${session.username}` : 'Sign in'
   const secondaryHref = '/register'
   const secondaryLabel = 'Create account'
 
@@ -51,30 +57,33 @@ export default async function Home() {
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-6 pt-24 pb-16 sm:pt-32 sm:px-10">
         <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
-          DevSecOps starter
+          Open-source demo · Paddle Sandbox
         </p>
         <h1 className="mt-4 text-5xl font-semibold leading-[0.98] tracking-tight sm:text-6xl">
-          A practical start
+          A full-stack starter
           <br />
-          for your next app.
+          in the open.
         </h1>
         <p className="mt-6 max-w-xl text-lg text-neutral-600 dark:text-neutral-400">
-          A Next.js starter with rate limiting, role-based route checks, and
-          password authentication already connected. Use it as a starting
-          point, then adapt it to your app.
+          A Next.js reference architecture with Upstash rate limiting,
+          role-based route checks, PBKDF2 auth, and a Paddle Sandbox checkout.
+          Every file is public — read the code, run it locally, or test the flow
+          below.
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <a
-            href={primaryHref}
+            href={REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-xl bg-[#17130d] px-5 py-2.5 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
           >
-            {primaryLabel}
+            View on GitHub
           </a>
           <a
-            href={secondaryHref}
+            href="/admin"
             className="rounded-xl border border-[#dfd9cc] px-5 py-2.5 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
           >
-            {secondaryLabel}
+            Try the auth demo
           </a>
         </div>
       </section>
@@ -162,6 +171,7 @@ export default async function Home() {
                 <tr><th className="p-4 font-medium">Rate limiting</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Pick a store, set policy, handle errors</td><td className="p-4">Upstash sliding window + fail-open behavior</td></tr>
                 <tr><th className="p-4 font-medium">Auth foundation</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Implement sessions, password hashing, route checks</td><td className="p-4">PBKDF2, HS256 sessions, login and registration</td></tr>
                 <tr><th className="p-4 font-medium">Headers and CI</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Configure, review, and maintain</td><td className="p-4">Security headers and GitHub Actions workflows</td></tr>
+                <tr><th className="p-4 font-medium">Payment webhook</th><td className="p-4 text-neutral-600 dark:text-neutral-400">Sign, verify, and deduplicate events</td><td className="p-4">Signed Paddle webhook + idempotent demo license</td></tr>
               </tbody>
             </table>
           </div>
@@ -186,16 +196,16 @@ export default async function Home() {
           </p>
           <div className="mt-6 flex flex-wrap gap-4">
             <a
-              href="/admin"
+              href={session ? '/dashboard' : '/admin'}
               className="rounded-xl bg-[#17130d] px-5 py-2.5 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
             >
-              Try /admin
+              {session ? `Continue as ${session.username}` : 'Try /admin'}
             </a>
             <a
-              href="/register"
+              href={secondaryHref}
               className="rounded-xl border border-[#dfd9cc] px-5 py-2.5 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
             >
-              Create account
+              {secondaryLabel}
             </a>
           </div>
         </div>
@@ -204,33 +214,42 @@ export default async function Home() {
         </p>
       </section>
 
-      {/* Selling cta */}
+      {/* Sandbox checkout cta */}
       <section className="border-t border-[#dfd9cc] dark:border-neutral-800">
         <div className="mx-auto max-w-5xl px-6 py-16 text-center sm:px-10">
           <p className="font-mono text-[13px] font-bold uppercase tracking-[0.12em] text-accent">
-            Get the code
+            Sandbox checkout
           </p>
           <h2 className="mx-auto mt-2 max-w-2xl text-3xl font-semibold tracking-tight sm:text-4xl">
-            Start with the foundation. Build your app on top.
+            Test the payment flow. Read every line.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
-            Get the starter source, its tests, and deployment examples with a
-            one-time purchase. Lifetime updates are included.
+            This is a free Paddle Sandbox demo: no real card, no charge, no tax
+            or payout setup. Run the overlay checkout with a test card and watch
+            the signed webhook mint a demo license. The source is public.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap justify-center gap-4">
             <a
               href="/buy"
               className="inline-block rounded-xl bg-[#17130d] px-6 py-3 font-semibold text-[#fbfaf7] transition hover:bg-accent dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
             >
-              Buy the starter
+              Test Sandbox Checkout
             </a>
             <a
-              href="/admin"
-              className="ml-4 inline-block rounded-xl border border-[#dfd9cc] px-6 py-3 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
+              href={WEBHOOK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-xl border border-[#dfd9cc] px-6 py-3 font-semibold text-[#17130d] transition hover:border-accent hover:text-accent dark:border-neutral-700 dark:text-neutral-100 dark:hover:border-[#f3c086]"
             >
-              Try it first
+              Read the webhook
             </a>
           </div>
+          <p className="mx-auto mt-6 max-w-xl rounded-xl border border-dashed border-[#dfd9cc] bg-white/60 p-4 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900/60 dark:text-neutral-400">
+            <strong className="font-semibold text-[#17130d] dark:text-neutral-100">Sandbox test card</strong>
+            <br />
+            <code className="font-mono text-accent">4242 4242 4242 4242</code>
+            {' '}· any future expiry · any 3-digit CVC. No real charge.
+          </p>
           <p className="mt-8 text-sm text-neutral-600 dark:text-neutral-400">
             Looking for a free browser tool?{' '}
             <a

@@ -4,9 +4,10 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 // Paddle Billing client.
 //
 // Flow: the server creates a transaction (POST /transactions, automatic
-// collection), the buyer pays on a Paddle-hosted checkout (overlay or
-// redirect), and a `transaction.completed` webhook mints the license. The
-// success page mints idempotently too, so the buyer can retrieve the key from the success page.
+// collection), the visitor pays on a Paddle-hosted checkout (overlay or
+// redirect), and a `transaction.completed` webhook mints a demo license. The
+// success page mints idempotently too, so the visitor can retrieve the key.
+// This demo runs in Paddle Sandbox by default (PADDLE_ENV=sandbox).
 //
 // A default payment link must be set + approved under
 // Paddle > Checkout > Checkout settings > Default payment link before any

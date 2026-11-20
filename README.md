@@ -1,8 +1,11 @@
 # DevSecOps Starter
 
-A Next.js starter with rate limiting, role-based route checks, and
-username/password authentication. It gives you a working base to adapt to
-your app.
+An open-source Next.js reference architecture with rate limiting, role-based
+route checks, username/password authentication, and a Paddle Sandbox checkout
+you can test without a real card.
+
+- Live demo: https://starter.fidelco.dev
+- Source: https://github.com/Polymerthcedric/nextjs-devsecops-starter
 
 Small dependency footprint. Clear examples. Your app stays yours.
 
@@ -22,6 +25,9 @@ Small dependency footprint. Clear examples. Your app stays yours.
   admin user-management interface. The in-memory fallback is for local demos.
 - **Strict security headers** (CSP, HSTS, X-Frame-Options, Permissions-Policy)
   locked into `next.config.ts`.
+- **Paddle Sandbox checkout** — a signed `transaction.completed` webhook
+  (`src/app/api/paddle/webhook/route.ts`) issues an idempotent demo license.
+  No live payments, tax compliance, or payout setup.
 - **Origin-based CSRF defense** (`src/lib/csrf.ts`) on every auth POST — strict
   in production, rejects foreign origins even behind SameSite cookies.
 - **CI + tests** — `.github/workflows/ci.yml` gates lint → tests → build on
@@ -87,8 +93,9 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `DEMO_USERS` | Optional demo users as JSON. Works with or without Supabase and takes precedence over database users with the same username. |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation (production) |
 | `NEXT_PUBLIC_APP_URL` | Public base URL for SEO (metadata, robots.txt, sitemap) |
-| `PADDLE_ENV` / `PADDLE_API_KEY` / `PADDLE_PRICE_ID` | Paddle Billing (Merchant of Record) — checkout + license sales |
-| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public Paddle.js client token for the in-page checkout overlay |
+| `PADDLE_ENV` / `PADDLE_API_KEY` / `PADDLE_PRICE_ID` | Paddle API environment (`sandbox` for the demo), server key, and sandbox price id |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public Paddle.js client token for the in-page checkout overlay (`test_...` forces sandbox) |
+| `NEXT_PUBLIC_PADDLE_ENV` | Explicit Paddle.js environment (`sandbox` or `live`) when no token prefix is present |
 | `PADDLE_WEBHOOK_SECRET` | Paddle `transaction.completed` webhook signing secret |
 
 ## Operations
@@ -103,26 +110,39 @@ uptime monitors:
 Each `services` field is a boolean "is configured" flag — no secrets, no
 upstream calls, so the probe never crashes on a misconfigured local env.
 
-## Selling the starter (Paddle)
+## Paddle Sandbox checkout (demo)
 
-`/buy` sells this boilerplate itself. Paddle acts as Merchant of Record —
-it bills buyers, handles global sales tax, and pays you out. To switch it on:
+`/buy` demonstrates the payment-to-license flow with Paddle Sandbox. Paddle
+acts as Merchant of Record in sandbox mode: no real charges, tax filings, or
+payouts. To wire it up in your own deployment:
 
-1. Set the env vars above (sandbox first: `PADDLE_ENV=sandbox`, sandbox API key).
-2. Under **Checkout > Checkout settings > Default payment link**, add and get
+1. Set `PADDLE_ENV=sandbox`, a sandbox API key, a sandbox price id, and the
+   sandbox webhook secret. Set `NEXT_PUBLIC_PADDLE_ENV=sandbox` and use a
+   `test_...` client token from **Developer Tools > Authentication**.
+2. Create a dummy product and one-time price under **Catalog > Products**;
+   put its `pri_...` id in `PADDLE_PRICE_ID`.
+3. Under **Checkout > Checkout settings > Default payment link**, add and get
    an **approved** payment link — required before hosted checkout works.
-3. Under **Developer Tools > Event delivery**, create a webhook destination
+4. Under **Developer Tools > Event delivery**, create a webhook destination
    for `https://your-domain/api/paddle/webhook`, subscribe to
    `transaction.completed`, and copy the secret into `PADDLE_WEBHOOK_SECRET`.
-4. Create a one-time price in the catalog; put its id in `PADDLE_PRICE_ID`.
 
-Buyers pay on an in-page Paddle.js checkout (or the hosted URL), the success
-page shows their `DS-XXXXX-XXXXX-XXXXX` license key, and `/api/health` reports
-`"paddle": <configured>` for monitoring.
+Visitors can complete a successful checkout with Paddle's test card:
+`4242 4242 4242 4242`, any future expiry, any 3-digit CVC. No real card is
+charged. The overlay calls `Paddle.Environment.set('sandbox')` before
+`Paddle.Initialize({ token })` — Paddle.js v2 rejects an `environment` option
+passed to `Initialize` itself, so the explicit flag and `test_` token drive
+that call.
 
-This is a one-time license sale for this starter. The webhook handles
-`transaction.completed` and idempotently issues a license; it does not manage
-recurring subscriptions or buyer billing portals.
+The webhook verifies the `Paddle-Signature` header (timestamp + HMAC-SHA256)
+against the raw body using Node's `crypto` module, rejects stale replays, and
+filters events to the configured price before issuing a license idempotently.
+The success page rechecks the transaction and issues the same demo key if the
+webhook was delayed. `/api/health` reports `"paddle": <configured>` for
+monitoring.
+
+This is a one-time sandbox license demo. It does not manage recurring
+subscriptions, real license enforcement, or buyer billing portals.
 
 ## Deploying
 
@@ -197,6 +217,7 @@ fail-open paths resolve without real credentials in CI.
 
 ---
 
-This is the commercial boilerplate. The free, public face is the
-[JSON to Zustand generator](https://github.com/Polymerthcedric/json-zustand-generator).
-Contact to license this starter for your team.
+The source is public and open source. Fork it, run it locally, and adapt it.
+See the [live demo](https://starter.fidelco.dev) and the
+[JSON to Zustand generator](https://github.com/Polymerthcedric/json-zustand-generator)
+for another small tool.

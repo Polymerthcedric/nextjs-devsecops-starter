@@ -20,16 +20,17 @@ const rawToken =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN : ''
 const PADDLE_CLIENT_TOKEN = rawToken ?? ''
 // Sandbox client tokens are prefixed `test_`, live tokens `live_`. Deriving
-// the environment from the token removes a whole class of "wrong env" bugs
-// (a test_ token opened in a live environment fails checkout).
-const PADDLE_ENV =
-  typeof process !== 'undefined'
-    ? PADDLE_CLIENT_TOKEN.startsWith('test_')
-      ? 'sandbox'
-      : PADDLE_CLIENT_TOKEN.startsWith('live_')
+// the environment from the token removes a whole class of "wrong env" bugs;
+// NEXT_PUBLIC_PADDLE_ENV is an explicit fallback when no token is wired.
+const PADDLE_ENV: 'sandbox' | 'live' =
+  PADDLE_CLIENT_TOKEN.startsWith('test_')
+    ? 'sandbox'
+    : PADDLE_CLIENT_TOKEN.startsWith('live_')
+      ? 'live'
+      : typeof process !== 'undefined' &&
+          process.env.NEXT_PUBLIC_PADDLE_ENV === 'live'
         ? 'live'
-        : (process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'live')
-    : 'live'
+        : 'sandbox'
 const APP_URL =
   typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_APP_URL ?? '' : ''
 
@@ -80,6 +81,8 @@ export default function BuyForm({ configured }: { configured: boolean }) {
       // to the hosted checkout URL Paddle returned.
       if (PADDLE_CLIENT_TOKEN) {
         await loadPaddleJs()
+        // Paddle.js v2 takes the environment here, not as an `environment`
+        // option on Initialize (unknown Initialize options are rejected).
         window.Paddle!.Environment.set(PADDLE_ENV)
         window.Paddle!.Initialize({ token: PADDLE_CLIENT_TOKEN })
         await window.Paddle!.Checkout.open({
@@ -122,8 +125,18 @@ export default function BuyForm({ configured }: { configured: boolean }) {
         disabled={status === 'busy'}
         className="mt-4 w-full rounded-xl bg-[#17130d] px-5 py-3 font-semibold text-[#fbfaf7] transition hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50 dark:bg-[#f3c086] dark:text-[#17130d] dark:hover:bg-white"
       >
-        {status === 'busy' ? 'Opening checkout…' : 'Buy the starter'}
+        {status === 'busy'
+          ? 'Opening checkout…'
+          : PADDLE_ENV === 'sandbox'
+            ? 'Test Sandbox Checkout'
+            : 'Open checkout'}
       </button>
+      {PADDLE_ENV === 'sandbox' && (
+        <p className="mt-3 rounded-xl border border-dashed border-[#dfd9cc] p-3 text-center font-mono text-xs text-neutral-600 dark:border-neutral-700 dark:text-neutral-400">
+          Sandbox test card: <strong className="text-accent">4242 4242 4242 4242</strong>
+          {' · '}any future expiry{' · '}any 3-digit CVC. No real charge.
+        </p>
+      )}
       {status === 'error' && (
         <p className="mt-3 text-center font-mono text-xs text-red-600 dark:text-red-400">
           {error}
@@ -131,8 +144,8 @@ export default function BuyForm({ configured }: { configured: boolean }) {
       )}
       {!configured && status === 'idle' && (
         <p className="mt-3 text-center font-mono text-xs text-neutral-500">
-          Paddle isn&apos;t wired to this deployment yet — this button will
-          explain once you touch it.
+          Paddle Sandbox isn&apos;t wired to this deployment yet — this button
+          will explain once you touch it.
         </p>
       )}
     </form>

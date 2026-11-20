@@ -3,11 +3,11 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "DevSecOps Starter — Secure Next.js boilerplate",
+    default: "DevSecOps Starter — open-source Next.js reference architecture",
     template: "%s | DevSecOps Starter",
   },
   description:
-    "A Next.js starter with request rate limiting, role-based route checks, and PBKDF2 password hashing.",
+    "An open-source Next.js demo with Upstash rate limiting, role-based route checks, PBKDF2 auth, and a Paddle Sandbox checkout you can test with a test card.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   ),
@@ -15,23 +15,23 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://starter.fidelco.dev/",
     siteName: "DevSecOps Starter",
-    title: "DevSecOps Starter",
+    title: "DevSecOps Starter — open-source demo",
     description:
-      "A Next.js starter with rate limiting, role-based route checks, and PBKDF2 password hashing.",
+      "An open-source Next.js demo with rate limiting, role checks, PBKDF2 auth, and a Paddle Sandbox checkout.",
     images: [
       {
         url: "https://starter.fidelco.dev/og.png",
         width: 1200,
         height: 630,
-        alt: "DevSecOps Starter — secure-by-default Next.js boilerplate",
+        alt: "DevSecOps Starter — open-source Next.js reference architecture",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "DevSecOps Starter",
+    title: "DevSecOps Starter — open-source demo",
     description:
-      "A Next.js starter with rate limiting, role-based route checks, and PBKDF2 password hashing.",
+      "An open-source Next.js demo with rate limiting, role checks, PBKDF2 auth, and a Paddle Sandbox checkout.",
     images: ["https://starter.fidelco.dev/og.png"],
   },
   icons: {
