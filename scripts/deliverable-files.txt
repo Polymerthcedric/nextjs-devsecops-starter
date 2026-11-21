@@ -58,4 +58,4 @@ src/proxy.ts
 supabase/schema.sql
 tsconfig.json
 vercel.json
-vitest.config.ts
+vitest.config.mts
