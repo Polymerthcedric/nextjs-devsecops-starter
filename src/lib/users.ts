@@ -43,9 +43,9 @@ function configuredDemoUsers(): UserRecord[] | null {
 
 // Generate the development password hash with: npm run hash-password -- <password>
 function fallbackUsers(): UserRecord[] {
+  if (process.env.NODE_ENV === 'production') return []
   const users = configuredDemoUsers()
   if (users) return users
-  if (process.env.NODE_ENV === 'production') return []
 
   // Built-in demo user (password: admin123) is limited to local development.
   return [
@@ -119,10 +119,10 @@ export async function getUserByUsername(
   username: string,
 ): Promise<UserRecord | null> {
   if (isSupabaseConfigured) {
-    // Explicit demo users may coexist with the database, but the built-in
-    // local-only admin is never enabled just because a database lookup fails.
-    const demoUser = configuredDemoUser(username)
-    if (demoUser) return demoUser
+    if (process.env.NODE_ENV !== 'production') {
+      const demoUser = configuredDemoUser(username)
+      if (demoUser) return demoUser
+    }
 
     try {
       return await getSupabaseUser(username)
@@ -131,9 +131,7 @@ export async function getUserByUsername(
       return null
     }
   }
-  if (process.env.NODE_ENV === 'production') {
-    return configuredDemoUser(username)
-  }
+  if (process.env.NODE_ENV === 'production') return null
   return getFallbackStore().find((u) => u.username === username) ?? null
 }
 
