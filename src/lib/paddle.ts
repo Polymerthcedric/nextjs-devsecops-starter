@@ -14,13 +14,14 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 // "pass a transaction to checkout" flow works (hosted or Paddle.js).
 // ---------------------------------------------------------------------------
 
-const PADDLE_API_BASE =
-  process.env.PADDLE_ENV === 'sandbox'
+export const getPaddleEnvironment = () =>
+  process.env.PADDLE_ENV === 'live' ? 'live' : 'sandbox'
+
+function getPaddleApiBase() {
+  return getPaddleEnvironment() === 'sandbox'
     ? 'https://sandbox-api.paddle.com'
     : 'https://api.paddle.com'
-
-export const getPaddleEnvironment = () =>
-  process.env.PADDLE_ENV === 'sandbox' ? 'sandbox' : 'live'
+}
 
 export function isPaddleConfigured() {
   return Boolean(process.env.PADDLE_API_KEY && process.env.PADDLE_PRICE_ID)
@@ -31,7 +32,7 @@ async function paddleFetch(path: string, init?: RequestInit) {
   if (!apiKey) {
     throw new Error('PADDLE_API_KEY is not set')
   }
-  const res = await fetch(`${PADDLE_API_BASE}${path}`, {
+  const res = await fetch(`${getPaddleApiBase()}${path}`, {
     ...init,
     headers: {
       Authorization: `Bearer ${apiKey}`,

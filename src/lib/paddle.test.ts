@@ -1,6 +1,15 @@
 import { createHmac } from 'node:crypto'
-import { describe, it, expect } from 'vitest'
-import { verifyPaddleWebhookSignature } from './paddle'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import {
+  createPaddleTransaction,
+  getPaddleEnvironment,
+  verifyPaddleWebhookSignature,
+} from './paddle'
+
+afterEach(() => {
+  vi.unstubAllEnvs()
+  vi.unstubAllGlobals()
+})
 
 const SECRET = 'pdl_ntfset_testsecret_testsecret'
 
@@ -44,5 +53,46 @@ describe('verifyPaddleWebhookSignature', () => {
   it('rejects when no secret configured', () => {
     const header = sign(body, Math.floor(now / 1000))
     expect(verifyPaddleWebhookSignature(body, header, '', now)).toBe(false)
+  })
+})
+
+describe('Paddle environment selection', () => {
+  function mockTransactionRequest() {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: { id: 'txn_test' } }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubEnv('PADDLE_API_KEY', 'test_api_key')
+    vi.stubEnv('PADDLE_PRICE_ID', 'pri_test')
+    return fetchMock
+  }
+
+  it('uses sandbox when live is not explicitly configured', async () => {
+    vi.stubEnv('PADDLE_ENV', '')
+    const fetchMock = mockTransactionRequest()
+
+    await createPaddleTransaction()
+
+    expect(getPaddleEnvironment()).toBe('sandbox')
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://sandbox-api.paddle.com/transactions',
+      expect.any(Object),
+    )
+  })
+
+  it('uses live only when explicitly configured', async () => {
+    vi.stubEnv('PADDLE_ENV', 'live')
+    const fetchMock = mockTransactionRequest()
+
+    await createPaddleTransaction()
+
+    expect(getPaddleEnvironment()).toBe('live')
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.paddle.com/transactions',
+      expect.any(Object),
+    )
   })
 })
