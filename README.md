@@ -85,9 +85,10 @@ legacy `eyJ...` service-role JWT.
 | `/dashboard` | Members area (any authenticated role) |
 | `/admin` | Admin dashboard (requires `admin` role) |
 
-**Sessions** are HS256-signed JWTs; the password hash and user store are
-Pluggable behind `src/lib/users.ts`. New signups always start with the
-least-privileged `user` role.
+**Sessions** are HS256-signed JWTs; production requires a `SESSION_SECRET`
+with at least 32 bytes and fails closed if it is missing or too short. The
+password hash and user store are pluggable behind `src/lib/users.ts`. New
+signups always start with the least-privileged `user` role.
 
 **Route guards** in the request proxy (`src/proxy.ts`) and server helpers:
 `requireRole('admin')` for `/admin`, `requireAuth()` for `/dashboard`.
@@ -122,10 +123,10 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | Variable | Role | Where it comes from |
 | --- | --- | --- |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiter backend | Upstash dashboard, REST API section |
-| `SESSION_SECRET` | HMAC key for signed session cookies | Generate with `openssl rand -base64 32` |
+| `SESSION_SECRET` | HMAC key for signed session cookies; at least 32 bytes in production | Generate with `openssl rand -base64 32` |
 | `SUPABASE_URL` | Project URL for the user and license tables | Supabase Connect dialog |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only key for both tables. Bypasses Row Level Security. | Supabase **Settings > API Keys**. Use `sb_secret_...` or a legacy service-role JWT. |
-| `DEMO_USERS` | Optional fallback users as JSON. Takes precedence over a database user with the same username. | Local JSON generated with `npm run hash-password` |
+| `DEMO_USERS` | Explicit fallback users as JSON. Takes precedence over a database user with the same username; without Supabase, production sign-in is read-only and registration is disabled. | Local JSON generated with `npm run hash-password` |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation | Your canonical host and any extra allowed origins |
 | `NEXT_PUBLIC_APP_URL` | Public base URL for metadata, robots.txt, and sitemap.xml | Your canonical domain |
 | `PADDLE_ENV` | API environment. Use `sandbox` for this demo. | Paddle account environment |

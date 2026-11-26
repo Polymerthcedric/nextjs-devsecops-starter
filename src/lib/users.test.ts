@@ -1,14 +1,18 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-// The repository reads SUPABASE_URL / DEMO_USERS at module scope, so we pin
-// the environment before importing it.
-beforeAll(() => {
+beforeEach(() => {
+  vi.resetModules()
+  vi.stubEnv('NODE_ENV', 'test')
   delete process.env.SUPABASE_URL
   delete process.env.SUPABASE_SERVICE_ROLE_KEY
   delete process.env.DEMO_USERS
 })
 
-describe('user repository (fallback store)', () => {
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
+
+describe('user repository (development fallback store)', () => {
   it('finds the built-in demo admin', async () => {
     const { getUserByUsername } = await import('./users')
     const user = await getUserByUsername('admin')
@@ -54,5 +58,49 @@ describe('user repository (fallback store)', () => {
         role: 'user',
       }),
     ).toBe('exists')
+  })
+
+  it('does not enable the built-in admin or in-memory registration in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const { createUser, getUserByUsername } = await import('./users')
+
+    await expect(getUserByUsername('admin')).resolves.toBeNull()
+    await expect(
+      createUser({
+        username: 'new-user',
+        passwordHash: 'pbkdf2$210000$abc$xyz',
+        role: 'user',
+      }),
+    ).resolves.toBe('error')
+  })
+
+  it('allows only explicitly configured demo users in production without Supabase', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    process.env.DEMO_USERS = JSON.stringify([
+      { username: 'configured', passwordHash: 'test-hash', role: 'user' },
+    ])
+    const { createUser, getUserByUsername } = await import('./users')
+
+    await expect(getUserByUsername('configured')).resolves.toEqual({
+      username: 'configured',
+      passwordHash: 'test-hash',
+      role: 'user',
+    })
+    await expect(getUserByUsername('admin')).resolves.toBeNull()
+    await expect(
+      createUser({
+        username: 'new-user',
+        passwordHash: 'pbkdf2$210000$abc$xyz',
+        role: 'user',
+      }),
+    ).resolves.toBe('error')
+  })
+
+  it('does not enable the built-in admin for invalid production demo configuration', async () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    process.env.DEMO_USERS = '{invalid'
+    const { getUserByUsername } = await import('./users')
+
+    await expect(getUserByUsername('admin')).resolves.toBeNull()
   })
 })

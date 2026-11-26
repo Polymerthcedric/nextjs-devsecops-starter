@@ -15,6 +15,17 @@ export const COOKIE_NAME = 'session'
 
 // ---- HS256 signing helpers using the Web Crypto API ----
 
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET
+  if (process.env.NODE_ENV === 'production') {
+    if (!secret || new TextEncoder().encode(secret).byteLength < 32) {
+      throw new Error('SESSION_SECRET must be at least 32 bytes in production')
+    }
+    return secret
+  }
+  return secret || 'dev-insecure-session-secret-change-me'
+}
+
 function base64UrlEncode(input: ArrayBuffer | Uint8Array | string): string {
   const bytes =
     typeof input === 'string'
@@ -41,8 +52,7 @@ function base64UrlDecode(input: string): Uint8Array<ArrayBuffer> {
 }
 
 async function getSecretKey(): Promise<CryptoKey> {
-  const secret =
-    process.env.SESSION_SECRET || 'dev-insecure-session-secret-change-me'
+  const secret = getSessionSecret()
   const key = await crypto.subtle.importKey(
     'raw',
     new TextEncoder().encode(secret),

@@ -11,28 +11,43 @@ export interface UserRecord {
 // User repository.
 //
 // Backed by Supabase/Postgres when configured; otherwise falls back to an
-// env-seeded in-memory store so the boilerplate still demos with no external
-// services (same fail-open philosophy as the Redis rate limiter).
+// env-seeded in-memory store for local development.
 // ---------------------------------------------------------------------------
 
 const isSupabaseConfigured = Boolean(
   process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY,
 )
 
-// Env-seeded fallback users: JSON array of { username, passwordHash, role }.
-// Generate hashes with: npm run hash-password -- <password>
-function fallbackUsers(): UserRecord[] {
-  const raw = process.env.DEMO_USERS
-  if (raw) {
-    try {
-      return JSON.parse(raw) as UserRecord[]
-    } catch {
-      // fall through to the built-in demo
-    }
-  }
+function isUserRecord(value: unknown): value is UserRecord {
+  if (!value || typeof value !== 'object') return false
+  const user = value as Record<string, unknown>
+  return (
+    typeof user.username === 'string' &&
+    typeof user.passwordHash === 'string' &&
+    (user.role === 'admin' || user.role === 'user')
+  )
+}
 
-  // Built-in demo user (password: admin123). In production, remove this and
-  // set DEMO_USERS, or configure Supabase.
+function configuredDemoUsers(): UserRecord[] | null {
+  const raw = process.env.DEMO_USERS
+  if (!raw) return null
+
+  try {
+    const users: unknown = JSON.parse(raw)
+    if (Array.isArray(users) && users.every(isUserRecord)) return users
+  } catch {
+    return null
+  }
+  return null
+}
+
+// Generate the development password hash with: npm run hash-password -- <password>
+function fallbackUsers(): UserRecord[] {
+  const users = configuredDemoUsers()
+  if (users) return users
+  if (process.env.NODE_ENV === 'production') return []
+
+  // Built-in demo user (password: admin123) is limited to local development.
   return [
     {
       username: 'admin',
@@ -44,16 +59,7 @@ function fallbackUsers(): UserRecord[] {
 }
 
 function configuredDemoUser(username: string): UserRecord | null {
-  const raw = process.env.DEMO_USERS
-  if (!raw) return null
-
-  try {
-    const users = JSON.parse(raw) as UserRecord[]
-    if (!Array.isArray(users)) return null
-    return users.find((user) => user.username === username) ?? null
-  } catch {
-    return null
-  }
+  return configuredDemoUsers()?.find((user) => user.username === username) ?? null
 }
 
 let fallbackStore: UserRecord[] | null = null
@@ -125,6 +131,9 @@ export async function getUserByUsername(
       return null
     }
   }
+  if (process.env.NODE_ENV === 'production') {
+    return configuredDemoUser(username)
+  }
   return getFallbackStore().find((u) => u.username === username) ?? null
 }
 
@@ -145,6 +154,10 @@ export async function createUser(
       console.error('Supabase user create error:', e)
       return 'error'
     }
+  }
+  if (process.env.NODE_ENV === 'production') {
+    console.error('User creation unavailable: Supabase is not configured')
+    return 'error'
   }
 
   const store = getFallbackStore()
