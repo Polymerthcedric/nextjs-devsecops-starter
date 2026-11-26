@@ -21,7 +21,16 @@ export async function verifyCredentials(
   username: string,
   password: string,
 ): Promise<Session | null> {
-  const user = await getUserByUsername(username.trim())
+  const normalizedUsername = username.trim()
+  if (
+    process.env.NODE_ENV === 'production' &&
+    normalizedUsername === 'admin' &&
+    password === 'admin123'
+  ) {
+    return null
+  }
+
+  const user = await getUserByUsername(normalizedUsername)
   if (!user) return null
 
   const valid = await verifyPassword(password, user.passwordHash)

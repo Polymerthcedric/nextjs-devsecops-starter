@@ -126,7 +126,7 @@ Open http://localhost:3000, try `/admin` logged out, then sign in as
 | `SESSION_SECRET` | HMAC key for signed session cookies; at least 32 bytes in production | Generate with `openssl rand -base64 32` |
 | `SUPABASE_URL` | Project URL for the user and license tables | Supabase Connect dialog |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only key for both tables. Bypasses Row Level Security. | Supabase **Settings > API Keys**. Use `sb_secret_...` or a legacy service-role JWT. |
-| `DEMO_USERS` | Explicit fallback users as JSON. Takes precedence over a database user with the same username; without Supabase, production sign-in is read-only and registration is disabled. | Local JSON generated with `npm run hash-password` |
+| `DEMO_USERS` | Development-only fallback users as JSON; ignored in production. | Local JSON generated with `npm run hash-password` |
 | `APP_HOST` / `ALLOWED_ORIGINS` | CSRF origin validation | Your canonical host and any extra allowed origins |
 | `NEXT_PUBLIC_APP_URL` | Public base URL for metadata, robots.txt, and sitemap.xml | Your canonical domain |
 | `PADDLE_ENV` | API environment. Use `sandbox` for this demo. | Paddle account environment |

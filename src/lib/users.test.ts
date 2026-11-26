@@ -74,18 +74,14 @@ describe('user repository (development fallback store)', () => {
     ).resolves.toBe('error')
   })
 
-  it('allows only explicitly configured demo users in production without Supabase', async () => {
+  it('does not use configured demo users in production without Supabase', async () => {
     vi.stubEnv('NODE_ENV', 'production')
     process.env.DEMO_USERS = JSON.stringify([
       { username: 'configured', passwordHash: 'test-hash', role: 'user' },
     ])
     const { createUser, getUserByUsername } = await import('./users')
 
-    await expect(getUserByUsername('configured')).resolves.toEqual({
-      username: 'configured',
-      passwordHash: 'test-hash',
-      role: 'user',
-    })
+    await expect(getUserByUsername('configured')).resolves.toBeNull()
     await expect(getUserByUsername('admin')).resolves.toBeNull()
     await expect(
       createUser({
