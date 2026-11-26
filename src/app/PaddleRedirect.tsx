@@ -24,7 +24,7 @@ const PADDLE_ENV =
       ? 'sandbox'
       : PADDLE_CLIENT_TOKEN.startsWith('live_')
         ? 'live'
-        : (process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'live')
+        : (process.env.NEXT_PUBLIC_PADDLE_ENV ?? 'sandbox')
     : 'live'
 
 function loadPaddleJs(): Promise<void> {
