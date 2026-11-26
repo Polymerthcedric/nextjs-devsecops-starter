@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { signSession, verifySession, type Session } from './session'
 
 function makeSession(overrides: Partial<Session> = {}): Session {
@@ -18,6 +18,28 @@ beforeEach(() => {
 })
 
 describe('signSession / verifySession', () => {
+  it('requires a strong secret in production', async () => {
+    try {
+      vi.stubEnv('NODE_ENV', 'production')
+      vi.stubEnv('SESSION_SECRET', '')
+      await expect(signSession(makeSession())).rejects.toThrow(
+        'SESSION_SECRET must be at least 32 bytes in production',
+      )
+
+      vi.stubEnv('SESSION_SECRET', 'short')
+      await expect(signSession(makeSession())).rejects.toThrow(
+        'SESSION_SECRET must be at least 32 bytes in production',
+      )
+
+      vi.stubEnv('SESSION_SECRET', 's'.repeat(32))
+      await expect(signSession(makeSession())).resolves.toMatch(
+        /^[^.]+\.[^.]+\.[^.]+$/,
+      )
+    } finally {
+      vi.unstubAllEnvs()
+    }
+  })
+
   it('round-trips a valid session', async () => {
     const session = makeSession()
     const token = await signSession(session)

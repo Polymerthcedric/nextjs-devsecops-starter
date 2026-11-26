@@ -9,6 +9,8 @@ export const metadata: Metadata = {
 }
 
 export default function LoginPage() {
+  const isDevelopment = process.env.NODE_ENV !== 'production'
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="w-full max-w-sm">
@@ -19,17 +21,19 @@ export default function LoginPage() {
           Sign in
         </h1>
         <p className="mb-8 text-neutral-600 dark:text-neutral-400">
-          Sign in to the demo account or create a local demo user.
+          Sign in to your account.
         </p>
         <LoginFormBoundary />
-        <div className="mt-8 rounded-lg border border-dashed border-[#dfd9cc] p-4 text-sm text-neutral-500 dark:border-neutral-700">
-          <p className="font-semibold text-[#17130d] dark:text-neutral-300">
-            Demo credentials
-          </p>
-          <p className="mt-1">
-            Admin: <code>admin</code> / <code>admin123</code>
-          </p>
-        </div>
+        {isDevelopment && (
+          <div className="mt-8 rounded-lg border border-dashed border-[#dfd9cc] p-4 text-sm text-neutral-500 dark:border-neutral-700">
+            <p className="font-semibold text-[#17130d] dark:text-neutral-300">
+              Demo credentials
+            </p>
+            <p className="mt-1">
+              Admin: <code>admin</code> / <code>admin123</code>
+            </p>
+          </div>
+        )}
         <p className="mt-8 text-sm text-neutral-500 dark:text-neutral-400">
           New here?{' '}
           <Link

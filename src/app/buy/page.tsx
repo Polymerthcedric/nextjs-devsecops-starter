@@ -94,11 +94,9 @@ export default async function BuyPage() {
       <section className="mt-8 rounded-2xl border border-[#dfd9cc] p-6 dark:border-neutral-800">
         <h3 className="font-semibold">Want to see the checks first?</h3>
         <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-          Try the live demo. Sign in as{' '}
-          <code className="font-mono">admin / admin123</code> and watch
-          /admin admit and bounce people at the request proxy. The demo
-          account is for evaluation only; set up your own credentials for a
-          deployment.
+          Try the protected route with an account configured for this
+          deployment and watch /admin admit and bounce requests at the proxy.
+          The built-in demo account is available only in local development.
         </p>
         <div className="mt-4 flex flex-wrap gap-4">
           <a

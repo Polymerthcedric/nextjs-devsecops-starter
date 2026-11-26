@@ -43,4 +43,4 @@ jobs:
         env:
           # Provide safe, non-secret values so the build's fail-open paths
           # (Redis, Supabase) resolve without real credentials in CI.
-          SESSION_SECRET: ci-only-insecure-session-secret
+          SESSION_SECRET: ci-only-throwaway-session-secret-not-for-production
